@@ -1,0 +1,53 @@
+{
+  "name": "code-editor",
+  "version": "1.0.0",
+  "description": "各种代码编辑器",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/303394539/code-editor.git"
+  },
+  "license": "MIT",
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "compiled",
+    "lib",
+    "es"
+  ],
+  "scripts": {
+    "build": "father build",
+    "lint": "eslint ./src --ext .ts,.tsx --fix",
+    "prebundle": "father prebundle",
+    "prettier": "prettier --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
+    "pub": "npm run prettier && npm run lint && npm run test && npm run build && npm publish",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@types/lodash": "4.x",
+    "@types/raf": "3.x",
+    "dt-sql-parser": "3.x",
+    "lodash": "4.x",
+    "monaco-editor": "0.52.x",
+    "monaco-editor-webpack-plugin": "7.1.x",
+    "raf": "3.x",
+    "react-monaco-editor": "0.56.x",
+    "sql-formatter": "15.4.x"
+  },
+  "devDependencies": {
+    "@baic/eslint-config-yolk": "~2.1.0-alpha.236",
+    "@baic/father-plugin-yolk": "~2.1.0-alpha.236",
+    "@baic/prettier-config-yolk": "~2.1.0-alpha.236",
+    "@types/prettier": "2.x",
+    "@types/react": "18.x",
+    "father": "4.5.x",
+    "prettier": "2.x",
+    "react": "18.x",
+    "vitest": "2.1.x"
+  },
+  "packageManager": "pnpm@8.15.9",
+  "engines": {
+    "node": ">=16",
+    "pnpm": "8"
+  }
+}
