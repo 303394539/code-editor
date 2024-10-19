@@ -17,7 +17,7 @@ import type { ChangeHandler } from 'react-monaco-editor/lib/types';
 import { parser } from 'dt-sql-parser';
 import * as MonacoEditor from 'monaco-editor';
 import * as Editor from 'monaco-editor/esm/vs/editor/editor.api';
-import * as SqlFormatter from 'sql-formatter';
+import * as SQLFormatter from 'sql-formatter';
 
 export interface EditorInstance {
   editor?: Editor.editor.IStandaloneCodeEditor;
@@ -50,7 +50,7 @@ interface AutoOption {
   autoFocus?: boolean;
 }
 
-export interface SqlEditorProps extends AutoOption {
+export interface EditorProps extends AutoOption {
   hintData?: HintData;
   defaultValue?: string;
   value?: string;
@@ -375,7 +375,7 @@ export const setHintData = (
   );
 };
 
-const sqlEditorFactory = (
+const editorFactory = (
   editor: MonacoEditor.editor.IStandaloneCodeEditor,
   monaco: typeof MonacoEditor,
   hintData?: HintData,
@@ -385,7 +385,7 @@ const sqlEditorFactory = (
     provideDocumentFormattingEdits(model) {
       return [
         {
-          text: SqlFormatter.format(model.getValue()),
+          text: SQLFormatter.format(model.getValue()),
           range: model.getFullModelRange(),
         },
       ];
@@ -403,7 +403,7 @@ export const create = (
     ...moreOption,
     language: 'sql',
   });
-  sqlEditorFactory(editor, MonacoEditor, hintData);
+  editorFactory(editor, MonacoEditor, hintData);
   if (autoFocus) {
     editor.focus();
   }
@@ -413,7 +413,7 @@ export const create = (
   return { editor, monaco: MonacoEditor };
 };
 
-const Component = forwardRef<EditorInstance, SqlEditorProps>((props, ref) => {
+const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
   const {
     defaultValue,
     value,
@@ -464,7 +464,7 @@ const Component = forwardRef<EditorInstance, SqlEditorProps>((props, ref) => {
     async (editor: any, monaco: any) => {
       editorRef.current = editor;
       monacoRef.current = monaco;
-      sqlEditorFactory(editor, monaco, hintData);
+      editorFactory(editor, monaco, hintData);
       if (autoFocus) {
         editor.focus();
       }
