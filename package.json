@@ -1,5 +1,5 @@
 {
-  "name": "code-editor",
+  "name": "@baic/code-editor",
   "version": "1.0.0",
   "description": "各种代码编辑器",
   "repository": {
