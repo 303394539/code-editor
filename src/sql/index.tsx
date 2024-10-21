@@ -1,6 +1,6 @@
 import { isEqual, uniqWith } from 'lodash';
 
-import { forwardRef, useCallback, useRef } from 'react';
+import { forwardRef, useCallback } from 'react';
 
 // @ts-ignore
 import { parser } from 'dt-sql-parser';
@@ -26,9 +26,9 @@ const createSuggestionItem = ({ label, content, kind }: HintDataItem) =>
     kind,
   } as any);
 
-const Component = forwardRef<EditorInstance, SQLEditorProps>((props, ref) => {
-  const hintDisposablesRef = useRef<IDisposable[]>([]);
+let disposableList: IDisposable[] = [];
 
+const Component = forwardRef<EditorInstance, SQLEditorProps>((props, ref) => {
   const formatterHandler = useCallback(
     (value?: string) => format(value || ''),
     [],
@@ -36,11 +36,11 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>((props, ref) => {
 
   const onHintDataHandler = useCallback(
     (monaco: typeof MonacoEditor, hintData?: HintData) => {
-      hintDisposablesRef.current.forEach((disposable) => {
+      disposableList.forEach((disposable) => {
         disposable.dispose();
       });
-      hintDisposablesRef.current = [];
-      hintDisposablesRef.current.push(
+      disposableList = [];
+      disposableList.push(
         monaco.languages.registerCompletionItemProvider('sql', {
           provideCompletionItems(model, position) {
             const { keywords = [], databases = [] } = hintData || {};

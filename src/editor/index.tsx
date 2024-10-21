@@ -162,7 +162,7 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     }
   }, []);
   const onChangeHandler = useCallback(
-    (v: any, e: any) => {
+    (v: string, e: editor.IModelContentChangedEvent) => {
       if (isFunction(onChange)) {
         onChange(v, e);
       }
@@ -173,7 +173,7 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     (v: string) => {
       if (editorRef.current) {
         editorRef.current.setValue(v);
-        onChangeHandler(v, {} as any);
+        onChangeHandler(v, {} as editor.IModelContentChangedEvent);
         if (autoFormat) {
           raf(formatHandler);
         }
@@ -182,7 +182,10 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     [autoFormat, onChangeHandler, formatHandler],
   );
   const editorDidMountHandler = useCallback(
-    async (editor: any, monaco: any) => {
+    async (
+      editor: editor.IStandaloneCodeEditor,
+      monaco: typeof MonacoEditor,
+    ) => {
       editorRef.current = editor;
       monacoRef.current = monaco;
       editorFactory({ language, monaco, hintData, formatter, onHintData });
