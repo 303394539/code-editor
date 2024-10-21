@@ -4,9 +4,10 @@ import { forwardRef, useCallback, useRef } from 'react';
 
 // @ts-ignore
 import { parser } from 'dt-sql-parser';
-import * as MonacoEditor from 'monaco-editor';
-import * as Editor from 'monaco-editor/esm/vs/editor/editor.api';
-import * as SQLFormatter from 'sql-formatter';
+import type { IDisposable } from 'monaco-editor';
+import MonacoEditor from 'monaco-editor';
+import { languages, Range } from 'monaco-editor/esm/vs/editor/editor.api';
+import { format } from 'sql-formatter';
 
 import type {
   EditorInstance,
@@ -26,10 +27,12 @@ const createSuggestionItem = ({ label, content, kind }: HintDataItem) =>
   } as any);
 
 const Component = forwardRef<EditorInstance, SQLEditorProps>((props, ref) => {
-  const hintDisposablesRef = useRef<MonacoEditor.IDisposable[]>([]);
-  const formatterHandler = useCallback((value?: string) => {
-    return SQLFormatter.format(value || '');
-  }, []);
+  const hintDisposablesRef = useRef<IDisposable[]>([]);
+
+  const formatterHandler = useCallback(
+    (value?: string) => format(value || ''),
+    [],
+  );
 
   const onHintDataHandler = useCallback(
     (monaco: typeof MonacoEditor, hintData?: HintData) => {
@@ -42,21 +45,21 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>((props, ref) => {
           provideCompletionItems(model, position) {
             const { keywords = [], databases = [] } = hintData || {};
             const lineContent = model.getValueInRange(
-              new Editor.Range(
+              new Range(
                 position.lineNumber,
                 0,
                 position.lineNumber,
                 position.column,
               ),
             );
-            const suggestions: Editor.languages.CompletionItem[] = [];
+            const suggestions: languages.CompletionItem[] = [];
             let leftLineNumber = position.lineNumber;
             let leftColumn = position.column - 1;
             for (; leftLineNumber >= 1; leftLineNumber--) {
               if (leftLineNumber === position.lineNumber) {
                 for (; leftColumn > 0; leftColumn--) {
                   const str = model.getValueInRange(
-                    new Editor.Range(
+                    new Range(
                       leftLineNumber,
                       leftColumn - 1,
                       leftLineNumber,
@@ -71,7 +74,7 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>((props, ref) => {
                 leftColumn = model.getLineContent(leftLineNumber).length + 1;
                 for (; leftColumn > 0; leftColumn--) {
                   const str = model.getValueInRange(
-                    new Editor.Range(
+                    new Range(
                       leftLineNumber,
                       leftColumn - 1,
                       leftLineNumber,
@@ -94,7 +97,7 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>((props, ref) => {
                   rightColumn++
                 ) {
                   const str = model.getValueInRange(
-                    new Editor.Range(
+                    new Range(
                       rightLineNumber,
                       rightColumn,
                       rightLineNumber,
@@ -113,7 +116,7 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>((props, ref) => {
                   rightColumn++
                 ) {
                   const str = model.getValueInRange(
-                    new Editor.Range(
+                    new Range(
                       rightLineNumber,
                       rightColumn,
                       rightLineNumber,
@@ -126,7 +129,7 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>((props, ref) => {
                 }
               }
             }
-            const currentSql = new Editor.Range(
+            const currentSql = new Range(
               leftLineNumber + 1,
               leftColumn,
               rightLineNumber,
@@ -334,7 +337,7 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>((props, ref) => {
           quickSuggestions: false,
           fixedOverflowWidgets: true,
           triggerCharacters: ['.', ' ', ',', '('],
-        } as Editor.languages.CompletionItemProvider),
+        } as languages.CompletionItemProvider),
       );
     },
     [],

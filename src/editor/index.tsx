@@ -13,13 +13,13 @@ import type { MonacoEditorProps } from 'react-monaco-editor';
 import ReactMonacoEditor from 'react-monaco-editor';
 import type { ChangeHandler } from 'react-monaco-editor/lib/types';
 
-// @ts-ignore
-import * as MonacoEditor from 'monaco-editor';
-import * as Editor from 'monaco-editor/esm/vs/editor/editor.api';
+import MonacoEditor from 'monaco-editor';
+import type { editor } from 'monaco-editor/esm/vs/editor/editor.api';
+import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
 
 export interface EditorInstance {
-  editor?: Editor.editor.IStandaloneCodeEditor;
-  monaco?: typeof Editor;
+  editor?: editor.IStandaloneCodeEditor;
+  monaco?: typeof MonacoEditor;
   format: () => void;
   setValue: (value: string) => void;
 }
@@ -27,7 +27,7 @@ export interface EditorInstance {
 export type HintDataItem = {
   label?: string;
   content: string;
-  kind: Editor.languages.CompletionItemKind;
+  kind: languages.CompletionItemKind;
 };
 
 type TableItem = HintDataItem & {
@@ -54,16 +54,16 @@ export interface EditorProps extends AutoOption {
   value?: string;
   onChange?: ChangeHandler;
   theme?: MonacoEditorProps['theme'];
-  monacoEditorOptions?: Editor.editor.IStandaloneCodeEditor;
+  monacoEditorOptions?: editor.IStandaloneCodeEditor;
   language: string;
   formatter?: (value?: string) => string;
   onHintData?: (monaco: typeof MonacoEditor, hintData?: HintData) => void;
 }
 
 // export type CreateOption = AutoOption &
-//   Omit<MonacoEditor.editor.IStandaloneEditorConstructionOptions, 'language'>;
+//   Omit<Monacoeditor.IStandaloneEditorConstructionOptions, 'language'>;
 
-export const Kind = Editor.languages.CompletionItemKind;
+export const Kind = languages.CompletionItemKind;
 
 const editorFactory = ({
   language,
@@ -111,7 +111,7 @@ const editorFactory = ({
 //   onHintData?: EditorProps['onHintData'];
 // }) => {
 //   const { autoFormat, autoFocus, ...moreOption } = options || {};
-//   const editor = MonacoEditor.editor.create(container, {
+//   const editor = Monacoeditor.create(container, {
 //     ...moreOption,
 //     language,
 //   });
@@ -152,8 +152,8 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     }),
     [monacoEditorOptions],
   );
-  const editorRef = useRef<Editor.editor.IStandaloneCodeEditor>();
-  const monacoRef = useRef<typeof Editor>();
+  const editorRef = useRef<editor.IStandaloneCodeEditor>();
+  const monacoRef = useRef<typeof MonacoEditor>();
   const formatHandler = useCallback(() => {
     if (editorRef.current) {
       raf(() =>
