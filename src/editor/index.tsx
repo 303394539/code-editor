@@ -14,7 +14,10 @@ import ReactMonacoEditor from 'react-monaco-editor';
 import type { ChangeHandler } from 'react-monaco-editor/lib/types';
 
 import MonacoEditor from 'monaco-editor';
-import type { editor } from 'monaco-editor/esm/vs/editor/editor.api';
+import type {
+  editor,
+  IDisposable,
+} from 'monaco-editor/esm/vs/editor/editor.api';
 import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
 
 export interface EditorInstance {
@@ -65,6 +68,8 @@ export interface EditorProps extends AutoOption {
 
 export const Kind = languages.CompletionItemKind;
 
+let disposableList: IDisposable[] = [];
+
 const editorFactory = ({
   language,
   monaco,
@@ -81,18 +86,24 @@ const editorFactory = ({
   if (isFunction(onHintData)) {
     onHintData(monaco, hintData);
   }
-  monaco.languages.registerDocumentFormattingEditProvider(language, {
-    provideDocumentFormattingEdits(model) {
-      return [
-        {
-          text: isFunction(formatter)
-            ? formatter(model.getValue())
-            : model.getValue(),
-          range: model.getFullModelRange(),
-        },
-      ];
-    },
+  disposableList.forEach((disposable) => {
+    disposable.dispose();
   });
+  disposableList = [];
+  disposableList.push(
+    monaco.languages.registerDocumentFormattingEditProvider(language, {
+      provideDocumentFormattingEdits(model) {
+        return [
+          {
+            text: isFunction(formatter)
+              ? formatter(model.getValue())
+              : model.getValue(),
+            range: model.getFullModelRange(),
+          },
+        ];
+      },
+    }),
+  );
 };
 
 // export const create = ({

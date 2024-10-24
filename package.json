@@ -26,7 +26,7 @@
   "dependencies": {
     "@types/lodash": "4.x",
     "@types/raf": "3.x",
-    "dt-sql-parser": "3.x",
+    "dt-sql-parser": "4.x",
     "lodash": "4.x",
     "monaco-editor": "0.52.x",
     "monaco-editor-webpack-plugin": "7.1.x",
