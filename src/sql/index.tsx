@@ -1,6 +1,6 @@
 import { isEqual, isString, uniqWith } from 'lodash';
 
-import { forwardRef, useCallback, useRef } from 'react';
+import { forwardRef, useCallback, useEffect, useRef } from 'react';
 
 import {
   FlinkSQL,
@@ -68,6 +68,13 @@ const createSuggestionItem = ({ label, content, kind }: HintDataItem) =>
 
 let disposableList: IDisposable[] = [];
 
+const clearDisposableList = () => {
+  disposableList.forEach((disposable) => {
+    disposable.dispose();
+  });
+  disposableList = [];
+};
+
 const Component = forwardRef<EditorInstance, SQLEditorProps>(
   ({ parserSQLType = 'MySQL', ...props }, ref) => {
     const parserRef = useRef(new parserSQLTypeMap[parserSQLType]());
@@ -83,10 +90,7 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
 
     const onHintDataHandler = useCallback(
       (monaco: typeof MonacoEditor, hintData?: HintData) => {
-        disposableList.forEach((disposable) => {
-          disposable.dispose();
-        });
-        disposableList = [];
+        clearDisposableList();
         disposableList.push(
           monaco.languages.registerCompletionItemProvider('sql', {
             provideCompletionItems(model, position) {
@@ -400,6 +404,11 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
       },
       [],
     );
+    useEffect(() => {
+      return () => {
+        clearDisposableList();
+      };
+    }, []);
     return (
       <Base
         formatter={formatterHandler}

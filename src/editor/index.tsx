@@ -14,11 +14,7 @@ import ReactMonacoEditor from 'react-monaco-editor';
 import type { ChangeHandler } from 'react-monaco-editor/lib/types';
 
 import MonacoEditor from 'monaco-editor';
-import type {
-  editor,
-  IDisposable,
-} from 'monaco-editor/esm/vs/editor/editor.api';
-import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
+import { editor, languages } from 'monaco-editor/esm/vs/editor/editor.api';
 
 export interface EditorInstance {
   editor?: editor.IStandaloneCodeEditor;
@@ -59,88 +55,11 @@ export interface EditorProps extends AutoOption {
   theme?: MonacoEditorProps['theme'];
   monacoEditorOptions?: editor.IStandaloneCodeEditor;
   language: string;
-  formatter?: (value?: string) => string;
+  formatter?: (value?: string) => string | undefined;
   onHintData?: (monaco: typeof MonacoEditor, hintData?: HintData) => void;
 }
 
-// export type CreateOption = AutoOption &
-//   Omit<Monacoeditor.IStandaloneEditorConstructionOptions, 'language'>;
-
 export const Kind = languages.CompletionItemKind;
-
-let disposableList: IDisposable[] = [];
-
-const editorFactory = ({
-  language,
-  monaco,
-  hintData,
-  formatter,
-  onHintData,
-}: {
-  language: string;
-  monaco: typeof MonacoEditor;
-  hintData?: HintData;
-  formatter?: EditorProps['formatter'];
-  onHintData?: EditorProps['onHintData'];
-}) => {
-  if (isFunction(onHintData)) {
-    onHintData(monaco, hintData);
-  }
-  disposableList.forEach((disposable) => {
-    disposable.dispose();
-  });
-  disposableList = [];
-  disposableList.push(
-    monaco.languages.registerDocumentFormattingEditProvider(language, {
-      provideDocumentFormattingEdits(model) {
-        return [
-          {
-            text: isFunction(formatter)
-              ? formatter(model.getValue())
-              : model.getValue(),
-            range: model.getFullModelRange(),
-          },
-        ];
-      },
-    }),
-  );
-};
-
-// export const create = ({
-//   language,
-//   container,
-//   options,
-//   hintData,
-//   formatter,
-//   onHintData,
-// }: {
-//   language: string;
-//   container: HTMLElement;
-//   options?: CreateOption;
-//   hintData?: HintData;
-//   formatter?: EditorProps['formatter'];
-//   onHintData?: EditorProps['onHintData'];
-// }) => {
-//   const { autoFormat, autoFocus, ...moreOption } = options || {};
-//   const editor = Monacoeditor.create(container, {
-//     ...moreOption,
-//     language,
-//   });
-//   editorFactory({
-//     language,
-//     monaco: MonacoEditor,
-//     hintData,
-//     formatter,
-//     onHintData,
-//   });
-//   if (autoFocus) {
-//     editor.focus();
-//   }
-//   if (autoFormat && editor.getValue()) {
-//     raf(() => editor.getAction('editor.action.formatDocument')?.run());
-//   }
-//   return { editor, monaco: MonacoEditor };
-// };
 
 const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
   const {
@@ -165,13 +84,19 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
   );
   const editorRef = useRef<editor.IStandaloneCodeEditor>();
   const monacoRef = useRef<typeof MonacoEditor>();
+
   const formatHandler = useCallback(() => {
-    if (editorRef.current) {
+    if (isFunction(formatter)) {
+      editorRef.current?.setValue(
+        formatter(editorRef.current?.getValue()) || '',
+      );
+    } else {
       raf(() =>
         editorRef.current?.getAction('editor.action.formatDocument')?.run(),
       );
     }
-  }, []);
+  }, [formatter]);
+
   const onChangeHandler = useCallback(
     (v: string, e: editor.IModelContentChangedEvent) => {
       if (isFunction(onChange)) {
@@ -182,40 +107,35 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
   );
   const setValueHandler = useCallback(
     (v: string) => {
-      if (editorRef.current) {
-        editorRef.current.setValue(v);
-        onChangeHandler(v, {} as editor.IModelContentChangedEvent);
-        if (autoFormat) {
-          raf(formatHandler);
-        }
+      let $v = v || '';
+      if (autoFormat && isFunction(formatter)) {
+        $v = formatter(v) || '';
+      }
+      onChangeHandler($v, {} as editor.IModelContentChangedEvent);
+      editorRef.current?.setValue($v);
+    },
+    [onChangeHandler, autoFormat, formatter],
+  );
+  const editorWillMountHandler = useCallback(
+    (monaco: typeof MonacoEditor) => {
+      monacoRef.current = monaco;
+      if (isFunction(onHintData)) {
+        onHintData(monaco, hintData);
       }
     },
-    [autoFormat, onChangeHandler, formatHandler],
+    [hintData, onHintData],
   );
   const editorDidMountHandler = useCallback(
-    async (
-      editor: editor.IStandaloneCodeEditor,
-      monaco: typeof MonacoEditor,
-    ) => {
+    (editor: editor.IStandaloneCodeEditor) => {
       editorRef.current = editor;
-      monacoRef.current = monaco;
-      editorFactory({ language, monaco, hintData, formatter, onHintData });
       if (autoFocus) {
         editor.focus();
       }
-      if (autoFormat && editor.getValue()) {
-        raf(formatHandler);
+      if (autoFormat && isFunction(formatter) && editor.getValue()) {
+        formatHandler();
       }
     },
-    [
-      language,
-      hintData,
-      formatter,
-      onHintData,
-      autoFocus,
-      autoFormat,
-      formatHandler,
-    ],
+    [autoFocus, autoFormat, formatHandler, formatter],
   );
   const onResizeHandler = useCallback(
     () => raf(() => editorRef.current?.layout()),
@@ -241,10 +161,11 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     <ReactMonacoEditor
       language={language}
       theme={theme}
-      defaultValue={defaultValue}
       options={options}
+      defaultValue={defaultValue}
       value={value}
       onChange={onChangeHandler}
+      editorWillMount={editorWillMountHandler}
       editorDidMount={editorDidMountHandler}
     />
   );
