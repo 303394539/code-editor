@@ -11,13 +11,13 @@ pnpm add @baic/code-editor
 #### 需要 monaco-editor-webpack-plugin 插件配合
 
 ```js
-// 以umi为例
+// 以 umi 为例
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
 export default {
   chainWebpack: (memo) => {
     memo
       .plugin('monaco-editor-webpack-plugin')
-      .use(new MonacoEditorWebpackPlugin(), [['sql']]); // 其他语言用其他的
+      .use(new MonacoEditorWebpackPlugin(), [['sql']]); // 其他语言增加其他的
   },
 };
 ```
