@@ -48,14 +48,14 @@ interface AutoOption {
 }
 
 export interface EditorProps extends AutoOption {
-  hintData?: HintData;
   defaultValue?: string;
   value?: string;
   onChange?: ChangeHandler;
   theme?: MonacoEditorProps['theme'];
-  monacoEditorOptions?: editor.IStandaloneCodeEditor;
+  monacoEditorOptions?: editor.IStandaloneEditorConstructionOptions;
   language: string;
   formatter?: (value?: string) => string | undefined;
+  hintData?: HintData;
   onHintData?: (monaco: typeof MonacoEditor, hintData?: HintData) => void;
   readOnly?: boolean;
 }
@@ -77,15 +77,13 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     onHintData,
     readOnly,
   } = props;
-  const options = useMemo(
-    () => ({
+  const options = useMemo(() => {
+    return {
       contextmenu: false,
-      readOnly,
-      focus: autoFocus,
       ...monacoEditorOptions,
-    }),
-    [autoFocus, monacoEditorOptions, readOnly],
-  );
+      readOnly,
+    };
+  }, [monacoEditorOptions, readOnly]);
   const editorRef = useRef<editor.IStandaloneCodeEditor>();
   const monacoRef = useRef<typeof MonacoEditor>();
 
@@ -132,11 +130,14 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
   const editorDidMountHandler = useCallback(
     (editor: editor.IStandaloneCodeEditor) => {
       editorRef.current = editor;
+      if (autoFocus) {
+        editor.focus();
+      }
       if (autoFormat && isFunction(formatter) && editor.getValue()) {
         formatHandler();
       }
     },
-    [autoFormat, formatHandler, formatter],
+    [autoFocus, autoFormat, formatHandler, formatter],
   );
   const onResizeHandler = useCallback(
     () => raf(() => editorRef.current?.layout()),
