@@ -57,6 +57,7 @@ export interface EditorProps extends AutoOption {
   language: string;
   formatter?: (value?: string) => string | undefined;
   onHintData?: (monaco: typeof MonacoEditor, hintData?: HintData) => void;
+  readOnly?: boolean;
 }
 
 export const Kind = languages.CompletionItemKind;
@@ -74,13 +75,16 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     language,
     formatter,
     onHintData,
+    readOnly,
   } = props;
   const options = useMemo(
     () => ({
       contextmenu: false,
+      readOnly,
+      focus: autoFocus,
       ...monacoEditorOptions,
     }),
-    [monacoEditorOptions],
+    [autoFocus, monacoEditorOptions, readOnly],
   );
   const editorRef = useRef<editor.IStandaloneCodeEditor>();
   const monacoRef = useRef<typeof MonacoEditor>();
@@ -128,14 +132,11 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
   const editorDidMountHandler = useCallback(
     (editor: editor.IStandaloneCodeEditor) => {
       editorRef.current = editor;
-      if (autoFocus) {
-        editor.focus();
-      }
       if (autoFormat && isFunction(formatter) && editor.getValue()) {
         formatHandler();
       }
     },
-    [autoFocus, autoFormat, formatHandler, formatter],
+    [autoFormat, formatHandler, formatter],
   );
   const onResizeHandler = useCallback(
     () => raf(() => editorRef.current?.layout()),
