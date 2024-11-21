@@ -81,9 +81,9 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     useMemo<editor.IStandaloneEditorConstructionOptions>(() => {
       return {
         contextmenu: false,
+        domReadOnly: true,
         ...monacoEditorOptions,
         readOnly,
-        domReadOnly: true,
       };
     }, [monacoEditorOptions, readOnly]);
   const editorRef = useRef<editor.IStandaloneCodeEditor>();
