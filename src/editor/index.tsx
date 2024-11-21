@@ -77,13 +77,15 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     onHintData,
     readOnly,
   } = props;
-  const options = useMemo(() => {
-    return {
-      contextmenu: false,
-      ...monacoEditorOptions,
-      readOnly,
-    };
-  }, [monacoEditorOptions, readOnly]);
+  const optionsMemo =
+    useMemo<editor.IStandaloneEditorConstructionOptions>(() => {
+      return {
+        contextmenu: false,
+        ...monacoEditorOptions,
+        readOnly,
+        domReadOnly: true,
+      };
+    }, [monacoEditorOptions, readOnly]);
   const editorRef = useRef<editor.IStandaloneCodeEditor>();
   const monacoRef = useRef<typeof MonacoEditor>();
 
@@ -163,7 +165,7 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     <ReactMonacoEditor
       language={language}
       theme={theme}
-      options={options}
+      options={optionsMemo}
       defaultValue={defaultValue}
       value={value}
       onChange={onChangeHandler}
