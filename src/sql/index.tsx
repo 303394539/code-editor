@@ -27,9 +27,10 @@ import Base from '../editor';
 
 export type SQLEditorProps = Omit<EditorProps, 'language'> & {
   /**
+   * @description sql类型
    * @default MySQL
    */
-  SQLType?:
+  type?:
     | 'FlinkSQL'
     | 'HiveSQL'
     | 'ImpalaSQL'
@@ -39,7 +40,7 @@ export type SQLEditorProps = Omit<EditorProps, 'language'> & {
     | 'TrinoSQL';
 };
 
-const SQLTypeMap = {
+const typeMap = {
   FlinkSQL,
   HiveSQL,
   ImpalaSQL,
@@ -49,7 +50,7 @@ const SQLTypeMap = {
   TrinoSQL,
 };
 
-const formatLanguageMap: Record<keyof typeof SQLTypeMap, SqlLanguage> = {
+const formatLanguageMap: Record<keyof typeof typeMap, SqlLanguage> = {
   FlinkSQL: 'sql',
   HiveSQL: 'hive',
   ImpalaSQL: 'sql',
@@ -76,16 +77,16 @@ const clearDisposableList = () => {
 };
 
 const Component = forwardRef<EditorInstance, SQLEditorProps>(
-  ({ SQLType = 'MySQL', ...props }, ref) => {
-    const parserRef = useRef(new SQLTypeMap[SQLType]());
+  ({ type = 'MySQL', ...props }, ref) => {
+    const parserRef = useRef(new typeMap[type]());
 
     const formatterHandler = useCallback(
       (value?: string) =>
         format(value || '', {
-          language: formatLanguageMap[SQLType],
+          language: formatLanguageMap[type],
           tabWidth: 2,
         }),
-      [SQLType],
+      [type],
     );
 
     const onHintDataHandler = useCallback(
@@ -414,7 +415,7 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
         formatter={formatterHandler}
         {...props}
         ref={ref}
-        language={SQLType === 'MySQL' ? 'mysql' : 'sql'}
+        language={type === 'MySQL' ? 'mysql' : 'sql'}
         onHintData={onHintDataHandler}
       />
     );
