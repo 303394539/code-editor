@@ -1,28 +1,28 @@
 # @baic/code-editor
 
-#### 基于 monaco-editor 的代码编辑器
+## 基于 monaco-editor 的代码编辑器
 
-## 安装
+### 安装
 
 ```shell
 pnpm add @baic/code-editor
 ```
 
-#### 需要 monaco-editor-webpack-plugin 插件配合
+### 需要 webpack 插件配合
 
 ```js
 // 以 umi 为例
-import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
+import CodeEditorWebpackPlugin from '@baic/code-editor/lib/code-editor-webpack-plugin';
 export default {
   chainWebpack: (memo) => {
     memo
       .plugin('monaco-editor-webpack-plugin')
-      .use(new MonacoEditorWebpackPlugin(), [['sql']]); // 其他语言增加其他的
+      .use(new CodeEditorWebpackPlugin(), [['sql']]); // 其他语言增加其他的
   },
 };
 ```
 
-## SQL 编辑器
+### SQL 编辑器
 
 ```tsx
 import { Kind, SQLEditor } from '@baic/code-editor';
@@ -81,7 +81,7 @@ export default () => (
 );
 ```
 
-## JSON 编辑器
+### JSON 编辑器
 
 ```tsx
 import { JSONEditor } from '@baic/code-editor';
