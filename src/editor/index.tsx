@@ -14,6 +14,7 @@ import ReactMonacoEditor from 'react-monaco-editor';
 import type { ChangeHandler } from 'react-monaco-editor/lib/types';
 
 import MonacoEditor from 'monaco-editor';
+import type { EditorLanguage } from 'monaco-editor/esm/metadata';
 import { editor, languages } from 'monaco-editor/esm/vs/editor/editor.api';
 
 export interface EditorInstance {
@@ -53,7 +54,7 @@ export interface EditorProps extends AutoOption {
   onChange?: ChangeHandler;
   theme?: MonacoEditorProps['theme'];
   monacoEditorOptions?: editor.IStandaloneEditorConstructionOptions;
-  language: string;
+  language: EditorLanguage;
   formatter?: (value?: string) => string | undefined;
   hintData?: HintData;
   onHintData?: (monaco: typeof MonacoEditor, hintData?: HintData) => void;

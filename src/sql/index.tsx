@@ -414,7 +414,7 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
         formatter={formatterHandler}
         {...props}
         ref={ref}
-        language="sql"
+        language={parserSQLType === 'MySQL' ? 'mysql' : 'sql'}
         onHintData={onHintDataHandler}
       />
     );
