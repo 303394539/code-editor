@@ -1,6 +1,6 @@
 import { isEqual, isString, uniqWith } from 'lodash';
 
-import { forwardRef, useCallback, useEffect, useRef } from 'react';
+import { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import {
   FlinkSQL,
@@ -23,7 +23,8 @@ import type {
   HintData,
   HintDataItem,
 } from '../editor';
-import Base from '../editor';
+import Base, { Kind } from '../editor';
+import * as DefaultKeyword from './keyword';
 
 export type SQLEditorProps = Omit<EditorProps, 'language'> & {
   /**
@@ -60,6 +61,37 @@ const formatLanguageMap: Record<keyof typeof typeMap, SqlLanguage> = {
   TrinoSQL: 'trino',
 };
 
+const languageMap: Record<keyof typeof typeMap, 'sql' | 'mysql' | 'pgsql'> = {
+  FlinkSQL: 'sql',
+  HiveSQL: 'sql',
+  ImpalaSQL: 'sql',
+  MySQL: 'mysql',
+  PostgreSQL: 'pgsql',
+  SparkSQL: 'sql',
+  TrinoSQL: 'sql',
+};
+const defaultHintDataMap: Record<keyof typeof typeMap, HintData> = {
+  FlinkSQL: {
+    databases: [],
+    keywords: DefaultKeyword.FlinkSQL.map((content) => ({
+      content,
+      kind: Kind.Keyword,
+    })),
+  },
+  HiveSQL: { databases: [], keywords: [] },
+  ImpalaSQL: { databases: [], keywords: [] },
+  MySQL: {
+    databases: [],
+    keywords: DefaultKeyword.MySQL.map((content) => ({
+      content,
+      kind: Kind.Keyword,
+    })),
+  },
+  PostgreSQL: { databases: [], keywords: [] },
+  SparkSQL: { databases: [], keywords: [] },
+  TrinoSQL: { databases: [], keywords: [] },
+};
+
 const createSuggestionItem = ({ label, content, kind }: HintDataItem) =>
   ({
     label: label || content,
@@ -80,6 +112,8 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
   ({ type = 'MySQL', ...props }, ref) => {
     const parserRef = useRef(new typeMap[type]());
 
+    const languageMemo = useMemo(() => languageMap[type], [type]);
+
     const formatterHandler = useCallback(
       (value?: string) =>
         format(value || '', {
@@ -93,9 +127,21 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
       (monaco: typeof MonacoEditor, hintData?: HintData) => {
         clearDisposableList();
         disposableList.push(
-          monaco.languages.registerCompletionItemProvider('sql', {
+          monaco.languages.registerCompletionItemProvider(languageMemo, {
             provideCompletionItems(model, position) {
-              const { keywords = [], databases = [] } = hintData || {};
+              const {
+                keywords: defaultKeywords = [],
+                databases: defaultDatabases = [],
+              } = defaultHintDataMap[type] || {};
+              const {
+                keywords: newKeywords = [],
+                databases: newDatabase = [],
+              } = hintData || {};
+              const keywords = uniqWith(
+                defaultKeywords.concat(newKeywords),
+                (a, b) => isEqual(a.content, b.content),
+              );
+              const databases = defaultDatabases.concat(newDatabase);
               const lineContent = model.getValueInRange(
                 new Range(
                   position.lineNumber,
@@ -403,7 +449,7 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
           } as languages.CompletionItemProvider),
         );
       },
-      [],
+      [languageMemo, type],
     );
     useEffect(() => {
       return () => {
@@ -415,11 +461,11 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
         formatter={formatterHandler}
         {...props}
         ref={ref}
-        language={type === 'MySQL' ? 'mysql' : 'sql'}
+        language={languageMemo}
         onHintData={onHintDataHandler}
       />
     );
   },
 );
-
+export { DefaultKeyword };
 export default Component;
