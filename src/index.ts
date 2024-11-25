@@ -24,7 +24,7 @@ export type { ShellEditorProps } from './shell';
 export { default as ShellEditor } from './shell';
 export type { SQLEditorProps } from './sql';
 export {
-  DefaultKeyword as DefaultSQLKeyword,
+  DefaultKeywords as DefaultSQLKeywords,
   default as SQLEditor,
 } from './sql';
 export type { TypeScriptEditorProps } from './typescript';

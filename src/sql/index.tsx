@@ -24,7 +24,7 @@ import type {
   HintDataItem,
 } from '../editor';
 import Base, { Kind } from '../editor';
-import * as DefaultKeyword from './keyword';
+import * as DefaultKeywords from './keywords';
 
 export type SQLEditorProps = Omit<EditorProps, 'language'> & {
   /**
@@ -73,7 +73,7 @@ const languageMap: Record<keyof typeof typeMap, 'sql' | 'mysql' | 'pgsql'> = {
 const defaultHintDataMap: Record<keyof typeof typeMap, HintData> = {
   FlinkSQL: {
     databases: [],
-    keywords: DefaultKeyword.FlinkSQL.map((content) => ({
+    keywords: DefaultKeywords.FlinkSQL.map((content) => ({
       content,
       kind: Kind.Keyword,
     })),
@@ -82,7 +82,7 @@ const defaultHintDataMap: Record<keyof typeof typeMap, HintData> = {
   ImpalaSQL: { databases: [], keywords: [] },
   MySQL: {
     databases: [],
-    keywords: DefaultKeyword.MySQL.map((content) => ({
+    keywords: DefaultKeywords.MySQL.map((content) => ({
       content,
       kind: Kind.Keyword,
     })),
@@ -467,5 +467,5 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
     );
   },
 );
-export { DefaultKeyword };
+export { DefaultKeywords };
 export default Component;
