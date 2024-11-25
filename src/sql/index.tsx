@@ -17,14 +17,22 @@ import { languages, Range } from 'monaco-editor/esm/vs/editor/editor.api';
 import type { SqlLanguage } from 'sql-formatter';
 import { format } from 'sql-formatter';
 
-import type {
-  EditorInstance,
-  EditorProps,
-  HintData,
-  HintDataItem,
-} from '../editor';
+import type { EditorInstance, EditorProps, HintDataItem } from '../editor';
 import Base, { Kind } from '../editor';
 import * as DefaultKeywords from './keywords';
+
+type TableItem = HintDataItem & {
+  fields: HintDataItem[];
+};
+
+type DatabaseItem = HintDataItem & {
+  tables: TableItem[];
+};
+
+export type HintData = {
+  keywords: HintDataItem[];
+  databases: DatabaseItem[];
+};
 
 export type SQLEditorProps = Omit<EditorProps, 'language'> & {
   /**
@@ -445,7 +453,7 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
             },
             quickSuggestions: false,
             fixedOverflowWidgets: true,
-            triggerCharacters: ['.', ' ', ',', '('],
+            triggerCharacters: ['.', ' ', '('],
           } as languages.CompletionItemProvider),
         );
       },

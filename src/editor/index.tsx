@@ -29,20 +29,6 @@ export type HintDataItem = {
   content: string;
   kind: languages.CompletionItemKind;
 };
-
-type TableItem = HintDataItem & {
-  fields: HintDataItem[];
-};
-
-type DatabaseItem = HintDataItem & {
-  tables: TableItem[];
-};
-
-export type HintData = {
-  keywords: HintDataItem[];
-  databases: DatabaseItem[];
-};
-
 interface AutoOption {
   autoFormat?: boolean;
   autoFocus?: boolean;
@@ -56,8 +42,8 @@ export interface EditorProps extends AutoOption {
   monacoEditorOptions?: editor.IStandaloneEditorConstructionOptions;
   language: EditorLanguage;
   formatter?: (value?: string) => string | undefined;
-  hintData?: HintData;
-  onHintData?: (monaco: typeof MonacoEditor, hintData?: HintData) => void;
+  hintData?: any;
+  onHintData?: (monaco: typeof MonacoEditor, hintData?: any) => void;
   readOnly?: boolean;
 }
 
