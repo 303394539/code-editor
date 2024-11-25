@@ -7,7 +7,7 @@ export type PythonEditorProps = Omit<EditorProps, 'language'>;
 
 const Component = forwardRef<EditorInstance, PythonEditorProps>(
   (props, ref) => {
-    return <Base {...props} ref={ref} language="python" />;
+    return <Base {...props} ref={ref} language="shell" />;
   },
 );
 

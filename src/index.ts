@@ -4,5 +4,7 @@ export type { JSONEditorProps } from './json';
 export { default as JSONEditor } from './json';
 export type { PythonEditorProps } from './python';
 export { default as PythonEditor } from './python';
+export type { ShellEditorProps } from './shell';
+export { default as ShellEditor } from './shell';
 export type { SQLEditorProps } from './sql';
 export { default as SQLEditor } from './sql';
