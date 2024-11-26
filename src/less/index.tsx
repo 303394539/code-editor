@@ -7,7 +7,9 @@ import keywords from './keywords';
 export type LESSEditorProps = Omit<EditorProps, 'language' | 'defaultKeywords'>;
 
 const Component = forwardRef<EditorInstance, LESSEditorProps>((props, ref) => {
-  return <Base {...props} ref={ref} language="less" defaultKeywords={keywords} />;
+  return (
+    <Base {...props} ref={ref} language="less" defaultKeywords={keywords} />
+  );
 });
 
 export default Component;

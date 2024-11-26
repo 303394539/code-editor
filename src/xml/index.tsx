@@ -7,7 +7,9 @@ import keywords from './keywords';
 export type XMLEditorProps = Omit<EditorProps, 'language' | 'defaultKeywords'>;
 
 const Component = forwardRef<EditorInstance, XMLEditorProps>((props, ref) => {
-  return <Base {...props} ref={ref} language="xml" defaultKeywords={keywords} />;
+  return (
+    <Base {...props} ref={ref} language="xml" defaultKeywords={keywords} />
+  );
 });
 
 export default Component;

@@ -20,5 +20,5 @@ export default [
   'export',
   'default',
   'import',
-  'form'
+  'form',
 ];

@@ -7,7 +7,9 @@ import keywords from './keywords';
 export type JavaEditorProps = Omit<EditorProps, 'language' | 'defaultKeywords'>;
 
 const Component = forwardRef<EditorInstance, JavaEditorProps>((props, ref) => {
-  return <Base {...props} ref={ref} language="java" defaultKeywords={keywords} />;
+  return (
+    <Base {...props} ref={ref} language="java" defaultKeywords={keywords} />
+  );
 });
 
 export default Component;
