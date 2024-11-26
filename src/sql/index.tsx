@@ -19,7 +19,10 @@ import { format } from 'sql-formatter';
 
 import type { EditorInstance, EditorProps, HintDataItem } from '../editor';
 import Base, { Kind } from '../editor';
-import * as DefaultKeywords from './keywords';
+import {
+  FlinkSQL as FlinkSQLKeywords,
+  MySQL as MySQLKeywords,
+} from './keywords';
 
 type TableItem = HintDataItem & {
   fields: HintDataItem[];
@@ -34,7 +37,10 @@ export type HintData = {
   databases: DatabaseItem[];
 };
 
-export type SQLEditorProps = Omit<EditorProps, 'language'> & {
+export type SQLEditorProps = Omit<
+  EditorProps,
+  'language' | 'defaultKeywords'
+> & {
   /**
    * @description sql类型
    * @default MySQL
@@ -81,7 +87,7 @@ const languageMap: Record<keyof typeof typeMap, 'sql' | 'mysql' | 'pgsql'> = {
 const defaultHintDataMap: Record<keyof typeof typeMap, HintData> = {
   FlinkSQL: {
     databases: [],
-    keywords: DefaultKeywords.FlinkSQL.map((content) => ({
+    keywords: FlinkSQLKeywords.map((content) => ({
       content,
       kind: Kind.Keyword,
     })),
@@ -90,7 +96,7 @@ const defaultHintDataMap: Record<keyof typeof typeMap, HintData> = {
   ImpalaSQL: { databases: [], keywords: [] },
   MySQL: {
     databases: [],
-    keywords: DefaultKeywords.MySQL.map((content) => ({
+    keywords: MySQLKeywords.map((content) => ({
       content,
       kind: Kind.Keyword,
     })),
@@ -475,5 +481,5 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
     );
   },
 );
-export { DefaultKeywords };
+
 export default Component;

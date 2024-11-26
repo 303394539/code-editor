@@ -1,4 +1,4 @@
-import { isFunction } from 'lodash';
+import { isEqual, isFunction, uniqWith } from 'lodash';
 import raf from 'raf';
 
 import {
@@ -13,6 +13,7 @@ import type { MonacoEditorProps } from 'react-monaco-editor';
 import ReactMonacoEditor from 'react-monaco-editor';
 import type { ChangeHandler } from 'react-monaco-editor/lib/types';
 
+import type { IDisposable } from 'monaco-editor';
 import MonacoEditor from 'monaco-editor';
 import type { EditorLanguage } from 'monaco-editor/esm/metadata';
 import { editor, languages } from 'monaco-editor/esm/vs/editor/editor.api';
@@ -28,6 +29,10 @@ export type HintDataItem = {
   label?: string;
   content: string;
   kind: languages.CompletionItemKind;
+};
+
+export type HintData = {
+  keywords: HintDataItem[];
 };
 interface AutoOption {
   autoFormat?: boolean;
@@ -45,9 +50,26 @@ export interface EditorProps extends AutoOption {
   hintData?: any;
   onHintData?: (monaco: typeof MonacoEditor, hintData?: any) => void;
   readOnly?: boolean;
+  defaultKeywords?: string[];
 }
 
 export const Kind = languages.CompletionItemKind;
+
+const createSuggestionItem = ({ label, content, kind }: HintDataItem) =>
+  ({
+    label: label || content,
+    insertText: content,
+    kind,
+  } as any);
+
+let disposableList: IDisposable[] = [];
+
+const clearDisposableList = () => {
+  disposableList.forEach((disposable) => {
+    disposable.dispose();
+  });
+  disposableList = [];
+};
 
 const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
   const {
@@ -63,6 +85,7 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     formatter,
     onHintData,
     readOnly,
+    defaultKeywords = [],
   } = props;
   const optionsMemo =
     useMemo<editor.IStandaloneEditorConstructionOptions>(() => {
@@ -107,14 +130,50 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     },
     [onChangeHandler, autoFormat, formatter],
   );
+  const onHintDataHandler = useCallback(
+    (monaco: typeof MonacoEditor, hintData?: HintData) => {
+      clearDisposableList();
+      if (defaultKeywords.length) {
+        disposableList.push(
+          monaco.languages.registerCompletionItemProvider(language, {
+            provideCompletionItems() {
+              const { keywords: newKeywords = [] } = hintData || {};
+              const keywords = uniqWith(
+                defaultKeywords
+                  .map((content) => ({
+                    content,
+                    kind: Kind.Keyword,
+                  }))
+                  .concat(newKeywords),
+                (a, b) => isEqual(a.content, b.content),
+              );
+              const suggestions: languages.CompletionItem[] = [];
+              keywords.forEach((item) =>
+                suggestions.push(createSuggestionItem(item)),
+              );
+              return {
+                suggestions: uniqWith(suggestions, isEqual),
+              };
+            },
+            quickSuggestions: false,
+            fixedOverflowWidgets: true,
+            triggerCharacters: ['.', ' '],
+          } as languages.CompletionItemProvider),
+        );
+      }
+    },
+    [defaultKeywords, language],
+  );
   const editorWillMountHandler = useCallback(
     (monaco: typeof MonacoEditor) => {
       monacoRef.current = monaco;
       if (isFunction(onHintData)) {
         onHintData(monaco, hintData);
+      } else {
+        onHintDataHandler(monaco, hintData);
       }
     },
-    [hintData, onHintData],
+    [hintData, onHintData, onHintDataHandler],
   );
   const editorDidMountHandler = useCallback(
     (editor: editor.IStandaloneCodeEditor) => {
@@ -132,22 +191,30 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     () => raf(() => editorRef.current?.layout()),
     [],
   );
-  useImperativeHandle(ref, () => ({
-    editor: editorRef.current,
-    monaco: monacoRef.current,
-    format: formatHandler,
-    setValue: setValueHandler,
-  }));
   useEffect(() => {
-    if (monacoRef.current && isFunction(onHintData)) {
-      onHintData(monacoRef.current, hintData);
+    if (monacoRef.current) {
+      if (isFunction(onHintData)) {
+        onHintData(monacoRef.current, hintData);
+      } else {
+        onHintDataHandler(monacoRef.current, hintData);
+      }
     }
-  }, [hintData, onHintData]);
+  }, [hintData, onHintData, onHintDataHandler]);
   useEffect(() => {
     window.addEventListener('resize', onResizeHandler);
     onResizeHandler();
     return () => window.removeEventListener('resize', onResizeHandler);
   }, [onResizeHandler]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      editor: editorRef.current,
+      monaco: monacoRef.current,
+      format: formatHandler,
+      setValue: setValueHandler,
+    }),
+    [formatHandler, setValueHandler],
+  );
   return (
     <ReactMonacoEditor
       language={language}

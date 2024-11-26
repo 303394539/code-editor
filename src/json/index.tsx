@@ -4,8 +4,9 @@ import { forwardRef, useCallback } from 'react';
 
 import type { EditorInstance, EditorProps } from '../editor';
 import Base from '../editor';
+import keywords from './keywords';
 
-export type JSONEditorProps = Omit<EditorProps, 'language'>;
+export type JSONEditorProps = Omit<EditorProps, 'language' | 'defaultKeywords'>;
 
 const Component = forwardRef<EditorInstance, JSONEditorProps>((props, ref) => {
   const formatterHandler = useCallback((value?: string) => {
@@ -19,7 +20,13 @@ const Component = forwardRef<EditorInstance, JSONEditorProps>((props, ref) => {
     return value || '';
   }, []);
   return (
-    <Base formatter={formatterHandler} {...props} ref={ref} language="json" />
+    <Base
+      formatter={formatterHandler}
+      {...props}
+      ref={ref}
+      language="json"
+      defaultKeywords={keywords}
+    />
   );
 });
 

@@ -23,10 +23,7 @@ export { default as SCSSEditor } from './scss';
 export type { ShellEditorProps } from './shell';
 export { default as ShellEditor } from './shell';
 export type { SQLEditorProps } from './sql';
-export {
-  DefaultKeywords as DefaultSQLKeywords,
-  default as SQLEditor,
-} from './sql';
+export { default as SQLEditor } from './sql';
 export type { TypeScriptEditorProps } from './typescript';
 export { default as TypeScriptEditor } from './typescript';
 export type { XMLEditorProps } from './xml';
