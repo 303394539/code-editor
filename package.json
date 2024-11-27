@@ -21,6 +21,7 @@
     "prebundle": "father prebundle",
     "prettier": "prettier --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
     "pub": "npm run prettier && npm run lint && npm run test && npm run build && npm publish",
+    "update": "git clean -xfd && rm -rf ./pnpm-lock.yaml && pnpm i",
     "test": "vitest run"
   },
   "dependencies": {
@@ -35,9 +36,9 @@
     "sql-formatter": "15.4.x"
   },
   "devDependencies": {
-    "@baic/eslint-config-yolk": "~2.1.0-alpha.236",
-    "@baic/father-plugin-yolk": "~2.1.0-alpha.236",
-    "@baic/prettier-config-yolk": "~2.1.0-alpha.236",
+    "@baic/eslint-config-yolk": "~2.1.0-alpha.239",
+    "@baic/father-plugin-yolk": "~2.1.0-alpha.239",
+    "@baic/prettier-config-yolk": "~2.1.0-alpha.239",
     "@types/prettier": "2.x",
     "@types/react": "18.x",
     "father": "4.5.x",
