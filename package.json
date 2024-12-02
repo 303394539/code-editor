@@ -1,6 +1,6 @@
 {
   "name": "@baic/code-editor",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "各种代码编辑器",
   "repository": {
     "type": "git",
@@ -21,8 +21,8 @@
     "prebundle": "father prebundle",
     "prettier": "prettier --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
     "pub": "npm run prettier && npm run lint && npm run test && npm run build && npm publish",
-    "update": "git clean -xfd && rm -rf ./pnpm-lock.yaml && pnpm i",
-    "test": "vitest run"
+    "test": "vitest run",
+    "update": "git clean -xfd && rm -rf ./pnpm-lock.yaml && pnpm i"
   },
   "dependencies": {
     "@types/lodash": "4.x",
