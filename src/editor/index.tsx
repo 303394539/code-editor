@@ -125,10 +125,9 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
       if (autoFormat && isFunction(formatter)) {
         $v = formatter(v) || '';
       }
-      onChangeHandler($v, {} as editor.IModelContentChangedEvent);
       editorRef.current?.setValue($v);
     },
-    [onChangeHandler, autoFormat, formatter],
+    [autoFormat, formatter],
   );
   const onHintDataHandler = useCallback(
     (monaco: typeof MonacoEditor, hintData?: HintData) => {
