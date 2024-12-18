@@ -47,6 +47,7 @@ export interface EditorProps extends AutoOption {
   monacoEditorOptions?: editor.IStandaloneEditorConstructionOptions;
   language: EditorLanguage;
   formatter?: (value?: string) => string | undefined;
+  onFormatError?: (e: { error?: any; value?: string }) => void;
   hintData?: any;
   onHintData?: (monaco: typeof MonacoEditor, hintData?: any) => void;
   readOnly?: boolean;
@@ -83,6 +84,7 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     autoFocus,
     language,
     formatter,
+    onFormatError,
     onHintData,
     readOnly,
     defaultKeywords = [],
@@ -100,16 +102,22 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
   const monacoRef = useRef<typeof MonacoEditor>();
 
   const formatHandler = useCallback(() => {
-    if (isFunction(formatter)) {
-      editorRef.current?.setValue(
-        formatter(editorRef.current?.getValue()) || '',
-      );
-    } else {
-      raf(() =>
-        editorRef.current?.getAction('editor.action.formatDocument')?.run(),
-      );
+    try {
+      if (isFunction(formatter)) {
+        editorRef.current?.setValue(
+          formatter(editorRef.current?.getValue()) || '',
+        );
+      } else {
+        raf(() =>
+          editorRef.current?.getAction('editor.action.formatDocument')?.run(),
+        );
+      }
+    } catch (error) {
+      if (isFunction(onFormatError)) {
+        onFormatError({ value: editorRef.current?.getValue(), error });
+      }
     }
-  }, [formatter]);
+  }, [formatter, onFormatError]);
 
   const onChangeHandler = useCallback(
     (v: string, e: editor.IModelContentChangedEvent) => {

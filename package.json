@@ -36,9 +36,9 @@
     "sql-formatter": "15.4.x"
   },
   "devDependencies": {
-    "@baic/eslint-config-yolk": "~2.1.0-alpha.239",
-    "@baic/father-plugin-yolk": "~2.1.0-alpha.239",
-    "@baic/prettier-config-yolk": "~2.1.0-alpha.239",
+    "@baic/eslint-config-yolk": "~2.1.0-alpha.242",
+    "@baic/father-plugin-yolk": "~2.1.0-alpha.242",
+    "@baic/prettier-config-yolk": "~2.1.0-alpha.242",
     "@types/prettier": "2.x",
     "@types/react": "18.x",
     "father": "4.5.x",
