@@ -25,11 +25,13 @@
     "update": "git clean -xfd && rm -rf ./pnpm-lock.yaml && pnpm i"
   },
   "dependencies": {
+    "@nginx/reference-lib": "1.1.x",
     "@types/lodash": "4.x",
     "@types/raf": "3.x",
     "dt-sql-parser": "4.x",
     "lodash": "4.x",
     "monaco-editor": "0.52.x",
+    "monaco-editor-nginx": "2.0.x",
     "monaco-editor-webpack-plugin": "7.1.x",
     "raf": "3.x",
     "react-monaco-editor": "0.56.x",

@@ -45,7 +45,7 @@ export interface EditorProps extends AutoOption {
   onChange?: ChangeHandler;
   theme?: MonacoEditorProps['theme'];
   monacoEditorOptions?: editor.IStandaloneEditorConstructionOptions;
-  language: EditorLanguage;
+  language: EditorLanguage | string;
   formatter?: (value?: string) => string | undefined;
   onFormatError?: (e: { error?: any; value?: string }) => void;
   hintData?: any;

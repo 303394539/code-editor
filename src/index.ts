@@ -14,6 +14,8 @@ export type { JSONEditorProps } from './json';
 export { default as JSONEditor } from './json';
 export type { LESSEditorProps } from './less';
 export { default as LESSEditor } from './less';
+export type { NginxEditorProps } from './nginx';
+export { default as NginxEditor } from './nginx';
 export type { PythonEditorProps } from './python';
 export { default as PythonEditor } from './python';
 export type { RedisEditorProps } from './redis';
