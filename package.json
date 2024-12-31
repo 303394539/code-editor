@@ -29,6 +29,7 @@
     "@types/lodash": "4.x",
     "@types/raf": "3.x",
     "dt-sql-parser": "4.x",
+    "json5": "2.2.x",
     "lodash": "4.x",
     "monaco-editor": "0.52.x",
     "monaco-editor-nginx": "2.0.x",

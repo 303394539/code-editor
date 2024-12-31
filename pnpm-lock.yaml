@@ -17,6 +17,9 @@ dependencies:
   dt-sql-parser:
     specifier: 4.x
     version: 4.0.2(antlr4ng-cli@1.0.7)
+  json5:
+    specifier: 2.2.x
+    version: 2.2.3
   lodash:
     specifier: 4.x
     version: 4.17.21

@@ -2,6 +2,8 @@ import { isString } from 'lodash';
 
 import { forwardRef, useCallback } from 'react';
 
+import { parse } from 'json5';
+
 import type { EditorInstance, EditorProps } from '../editor';
 import Base from '../editor';
 import keywords from './keywords';
@@ -12,7 +14,7 @@ const Component = forwardRef<EditorInstance, JSONEditorProps>((props, ref) => {
   const formatterHandler = useCallback((value?: string) => {
     if (isString(value) && value.length) {
       try {
-        return JSON.stringify(JSON.parse(value), null, 2);
+        return JSON.stringify(parse(value), null, 2);
       } catch (error) {
         console.error(error);
       }
