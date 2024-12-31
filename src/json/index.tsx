@@ -5,7 +5,7 @@ import { forwardRef, useCallback } from 'react';
 import { parse } from 'json5';
 
 import type { EditorInstance, EditorProps } from '../editor';
-import Base from '../editor';
+import Editor from '../editor';
 import keywords from './keywords';
 
 export type JSONEditorProps = Omit<EditorProps, 'language' | 'defaultKeywords'>;
@@ -22,7 +22,7 @@ const Component = forwardRef<EditorInstance, JSONEditorProps>((props, ref) => {
     return value || '';
   }, []);
   return (
-    <Base
+    <Editor
       formatter={formatterHandler}
       {...props}
       ref={ref}

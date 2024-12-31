@@ -3,7 +3,7 @@ import 'monaco-editor-nginx';
 import { forwardRef, useMemo } from 'react';
 
 import type { EditorInstance, EditorProps } from '../editor';
-import Base from '../editor';
+import Editor from '../editor';
 
 export type NginxEditorProps = Omit<
   EditorProps,
@@ -16,7 +16,7 @@ const Component = forwardRef<EditorInstance, NginxEditorProps>(
       () => (theme === 'vs-dark' ? 'nginx-theme-dark' : 'nginx-theme'),
       [theme],
     );
-    return <Base {...props} ref={ref} theme={themeMemo} language="nginx" />;
+    return <Editor {...props} ref={ref} theme={themeMemo} language="nginx" />;
   },
 );
 

@@ -2,6 +2,8 @@ export type { CSSEditorProps } from './css';
 export { default as CSSEditor } from './css';
 export type { EditorInstance, EditorProps } from './editor';
 export { default as Editor, Kind } from './editor';
+export type { ElasticSearchEditorProps } from './elasticsearch';
+export { default as ElasticSearchEditor } from './elasticsearch';
 export type { GoEditorProps } from './go';
 export { default as GoEditor } from './go';
 export type { HTMLEditorProps } from './html';

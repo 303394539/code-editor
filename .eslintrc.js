@@ -7,5 +7,12 @@ module.exports = {
   rules: {
     '@typescript-eslint/no-explicit-any': 0,
     'no-console': 0,
+    /**
+     * ElasticSearch临时放开
+     */
+    'no-useless-escape': 0,
+    '@typescript-eslint/no-unused-expressions': 0,
+    '@typescript-eslint/no-use-before-define': 0,
+    '@typescript-eslint/no-non-null-assertion': 0
   },
 };

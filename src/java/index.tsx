@@ -1,14 +1,14 @@
 import { forwardRef } from 'react';
 
 import type { EditorInstance, EditorProps } from '../editor';
-import Base from '../editor';
+import Editor from '../editor';
 import keywords from './keywords';
 
 export type JavaEditorProps = Omit<EditorProps, 'language' | 'defaultKeywords'>;
 
 const Component = forwardRef<EditorInstance, JavaEditorProps>((props, ref) => {
   return (
-    <Base {...props} ref={ref} language="java" defaultKeywords={keywords} />
+    <Editor {...props} ref={ref} language="java" defaultKeywords={keywords} />
   );
 });
 

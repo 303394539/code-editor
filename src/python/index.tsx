@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import type { EditorInstance, EditorProps } from '../editor';
-import Base from '../editor';
+import Editor from '../editor';
 import keywords from './keywords';
 
 export type PythonEditorProps = Omit<
@@ -12,7 +12,7 @@ export type PythonEditorProps = Omit<
 const Component = forwardRef<EditorInstance, PythonEditorProps>(
   (props, ref) => {
     return (
-      <Base {...props} ref={ref} language="python" defaultKeywords={keywords} />
+      <Editor {...props} ref={ref} language="python" defaultKeywords={keywords} />
     );
   },
 );

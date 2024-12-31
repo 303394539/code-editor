@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import type { EditorInstance, EditorProps } from '../editor';
-import Base from '../editor';
+import Editor from '../editor';
 import keywords from './keywords';
 
 export type RedisEditorProps = Omit<
@@ -11,7 +11,7 @@ export type RedisEditorProps = Omit<
 
 const Component = forwardRef<EditorInstance, RedisEditorProps>((props, ref) => {
   return (
-    <Base {...props} ref={ref} language="redis" defaultKeywords={keywords} />
+    <Editor {...props} ref={ref} language="redis" defaultKeywords={keywords} />
   );
 });
 

@@ -9,7 +9,7 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import type { MonacoEditorProps } from 'react-monaco-editor';
+import type { MonacoEditorProps as ReactMonacoEditorProps } from 'react-monaco-editor';
 import ReactMonacoEditor from 'react-monaco-editor';
 import type { ChangeHandler } from 'react-monaco-editor/lib/types';
 
@@ -18,12 +18,12 @@ import MonacoEditor from 'monaco-editor';
 import type { EditorLanguage } from 'monaco-editor/esm/metadata';
 import { editor, languages } from 'monaco-editor/esm/vs/editor/editor.api';
 
-export interface EditorInstance {
+export type EditorInstance = {
   editor?: editor.IStandaloneCodeEditor;
   monaco?: typeof MonacoEditor;
   format: () => void;
   setValue: (value: string) => void;
-}
+};
 
 export type HintDataItem = {
   label?: string;
@@ -34,16 +34,16 @@ export type HintDataItem = {
 export type HintData = {
   keywords: HintDataItem[];
 };
-interface AutoOption {
+type AutoOption = {
   autoFormat?: boolean;
   autoFocus?: boolean;
-}
+};
 
-export interface EditorProps extends AutoOption {
+export type EditorProps = AutoOption & {
   defaultValue?: string;
   value?: string;
   onChange?: ChangeHandler;
-  theme?: MonacoEditorProps['theme'];
+  theme?: ReactMonacoEditorProps['theme'];
   monacoEditorOptions?: editor.IStandaloneEditorConstructionOptions;
   language: EditorLanguage | string;
   formatter?: (value?: string) => string | undefined;
@@ -52,7 +52,7 @@ export interface EditorProps extends AutoOption {
   onHintData?: (monaco: typeof MonacoEditor, hintData?: any) => void;
   readOnly?: boolean;
   defaultKeywords?: string[];
-}
+} & Pick<ReactMonacoEditorProps, 'editorWillMount' | 'editorWillUnmount'>;
 
 export const Kind = languages.CompletionItemKind;
 
@@ -88,6 +88,8 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     onHintData,
     readOnly,
     defaultKeywords = [],
+    editorWillMount,
+    editorWillUnmount,
   } = props;
   const optionsMemo =
     useMemo<editor.IStandaloneEditorConstructionOptions>(() => {
@@ -171,8 +173,13 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     },
     [defaultKeywords, language],
   );
-  const editorWillMountHandler = useCallback(
-    (monaco: typeof MonacoEditor) => {
+  const editorWillMountHandler = useCallback<
+    Required<ReactMonacoEditorProps>['editorWillMount']
+  >(
+    (monaco) => {
+      if (isFunction(editorWillMount)) {
+        editorWillMount(monaco);
+      }
       monacoRef.current = monaco;
       if (isFunction(onHintData)) {
         onHintData(monaco, hintData);
@@ -180,10 +187,15 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
         onHintDataHandler(monaco, hintData);
       }
     },
-    [hintData, onHintData, onHintDataHandler],
+    [editorWillMount, hintData, onHintData, onHintDataHandler],
   );
-  const editorDidMountHandler = useCallback(
-    (editor: editor.IStandaloneCodeEditor) => {
+  const editorDidMountHandler = useCallback<
+    Required<ReactMonacoEditorProps>['editorWillUnmount']
+  >(
+    (editor, monaco) => {
+      if (isFunction(editorWillUnmount)) {
+        editorWillUnmount(editor, monaco);
+      }
       editorRef.current = editor;
       if (autoFocus) {
         editor.focus();
@@ -192,7 +204,7 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
         formatHandler();
       }
     },
-    [autoFocus, autoFormat, formatHandler, formatter],
+    [autoFocus, autoFormat, editorWillUnmount, formatHandler, formatter],
   );
   const onResizeHandler = useCallback(
     () => raf(() => editorRef.current?.layout()),

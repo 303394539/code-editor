@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import type { EditorInstance, EditorProps } from '../editor';
-import Base from '../editor';
+import Editor from '../editor';
 import keywords from './keywords';
 
 export type JavaScriptEditorProps = Omit<
@@ -12,7 +12,7 @@ export type JavaScriptEditorProps = Omit<
 const Component = forwardRef<EditorInstance, JavaScriptEditorProps>(
   (props, ref) => {
     return (
-      <Base
+      <Editor
         {...props}
         ref={ref}
         language="javascript"

@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import type { EditorInstance, EditorProps } from '../editor';
-import Base from '../editor';
+import Editor from '../editor';
 import keywords from './keywords';
 
 export type ShellEditorProps = Omit<
@@ -11,7 +11,7 @@ export type ShellEditorProps = Omit<
 
 const Component = forwardRef<EditorInstance, ShellEditorProps>((props, ref) => {
   return (
-    <Base {...props} ref={ref} language="shell" defaultKeywords={keywords} />
+    <Editor {...props} ref={ref} language="shell" defaultKeywords={keywords} />
   );
 });
 

@@ -18,7 +18,7 @@ import type { SqlLanguage } from 'sql-formatter';
 import { format } from 'sql-formatter';
 
 import type { EditorInstance, EditorProps, HintDataItem } from '../editor';
-import Base, { Kind } from '../editor';
+import Editor, { Kind } from '../editor';
 import {
   FlinkSQL as FlinkSQLKeywords,
   MySQL as MySQLKeywords,
@@ -471,7 +471,7 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
       };
     }, []);
     return (
-      <Base
+      <Editor
         formatter={formatterHandler}
         {...props}
         ref={ref}
