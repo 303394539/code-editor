@@ -14,7 +14,7 @@ import {
 import type { IDisposable } from 'monaco-editor';
 import MonacoEditor from 'monaco-editor';
 import { languages, Range } from 'monaco-editor/esm/vs/editor/editor.api';
-import type { SqlLanguage } from 'sql-formatter';
+// import type { SqlLanguage } from 'sql-formatter';
 import { format } from 'sql-formatter';
 
 import type { EditorInstance, EditorProps, HintDataItem } from '../editor';
@@ -65,15 +65,15 @@ const typeMap = {
   TrinoSQL,
 };
 
-const formatLanguageMap: Record<keyof typeof typeMap, SqlLanguage> = {
-  FlinkSQL: 'sql',
-  HiveSQL: 'hive',
-  ImpalaSQL: 'sql',
-  MySQL: 'mysql',
-  PostgreSQL: 'postgresql',
-  SparkSQL: 'spark',
-  TrinoSQL: 'trino',
-};
+// const formatLanguageMap: Record<keyof typeof typeMap, SqlLanguage> = {
+//   FlinkSQL: 'sql',
+//   HiveSQL: 'hive',
+//   ImpalaSQL: 'sql',
+//   MySQL: 'mysql',
+//   PostgreSQL: 'postgresql',
+//   SparkSQL: 'spark',
+//   TrinoSQL: 'trino',
+// };
 
 const languageMap: Record<keyof typeof typeMap, 'sql' | 'mysql' | 'pgsql'> = {
   FlinkSQL: 'sql',
@@ -131,10 +131,11 @@ const Component = forwardRef<EditorInstance, SQLEditorProps>(
     const formatterHandler = useCallback(
       (value?: string) =>
         format(value || '', {
-          language: formatLanguageMap[type],
+          // language: formatLanguageMap[type],
           tabWidth: 2,
+          paramTypes: { custom: [{ regex: String.raw`(\S+)?\{.+?\}` }] },
         }),
-      [type],
+      [],
     );
 
     const onHintDataHandler = useCallback(
