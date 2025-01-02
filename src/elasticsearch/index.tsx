@@ -17,7 +17,6 @@ import {
   formatQDSL,
   getAction,
   getActionMarksDecorations,
-  searchTokens,
 } from './monaco';
 
 export type ElasticSearchEditorProps = Omit<
@@ -37,35 +36,64 @@ const clearDisposableList = () => {
 const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
   (props, ref) => {
     const editorRef = useRef<EditorInstance['editor']>();
+
+    const searchTokensRef = useRef<SearchAction[]>([]);
+    const executeDecorationsRef = useRef<(Decoration | string)[]>([]);
+    const currentActionRef = useRef<SearchAction>();
+
+    const refreshActionMarksHandler = useCallback((editor?: MonacoEditor) => {
+      const freshDecorations = getActionMarksDecorations(
+        searchTokensRef.current,
+      );
+      // @See https://github.com/Microsoft/monaco-editor/issues/913#issuecomment-396537569
+      executeDecorationsRef.current = editor?.deltaDecorations(
+        executeDecorationsRef.current as Array<string>,
+        freshDecorations,
+      ) as unknown as Decoration[];
+    }, []);
+
     const formatterHandler = useCallback((value?: string) => {
       if (isString(value) && value.length) {
         try {
           if (editorRef.current) {
-            const model = editorRef.current.getModel();
-            const action = getAction(editorRef.current.getPosition());
-            if (model && action) {
-              const { startLineNumber, endLineNumber } = action.position;
-              const formatted = formatQDSL(
-                searchTokens,
-                model,
-                action.position,
-              );
-              model.pushEditOperations(
-                [],
-                [
-                  {
-                    range: {
-                      startLineNumber: startLineNumber + 1,
-                      startColumn: 1,
-                      endLineNumber,
-                      endColumn: model.getLineLength(endLineNumber) + 1,
-                    },
-                    text: formatted,
-                  },
-                ],
-                // @ts-ignore
-                () => [],
-              );
+            const editor = editorRef.current;
+            const model = editor.getModel();
+            if (model) {
+              let i = 0;
+              const callback = () => {
+                if (i < searchTokensRef.current.length) {
+                  const action = searchTokensRef.current[i];
+                  const { startLineNumber, endLineNumber } = action.position;
+                  const formatted = formatQDSL(
+                    searchTokensRef.current,
+                    model,
+                    action.position,
+                  );
+                  model.pushEditOperations(
+                    [],
+                    [
+                      {
+                        range: {
+                          startLineNumber: startLineNumber + 1,
+                          startColumn: 1,
+                          endLineNumber,
+                          endColumn: model.getLineLength(endLineNumber) + 1,
+                        },
+                        text: formatted,
+                      },
+                    ],
+                    // @ts-ignore
+                    () => [],
+                  );
+                  searchTokensRef.current = buildSearchToken(model);
+                  refreshActionMarksHandler(editor);
+                  i++;
+                  callback();
+                }
+              };
+              if (searchTokensRef.current.length) {
+                callback();
+              }
               return model.getValue();
             }
           }
@@ -79,31 +107,14 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
       (editor, monaco) => {
         editorRef.current = editor;
 
-        let executeDecorations: Array<Decoration | string> = [];
-        let currentAction: SearchAction | undefined = void 0;
-        // let autoIndentCmdId: string | null = null;
-        // let copyCurlCmdId: string | null = null;
-
-        const refreshActionMarks = (
-          editor: MonacoEditor,
-          searchTokens: SearchAction[],
-        ) => {
-          const freshDecorations = getActionMarksDecorations(searchTokens);
-          // @See https://github.com/Microsoft/monaco-editor/issues/913#issuecomment-396537569
-          executeDecorations = editor.deltaDecorations(
-            executeDecorations as Array<string>,
-            freshDecorations,
-          ) as unknown as Decoration[];
-        };
-
         disposableList.push(
           monaco.languages.registerCodeLensProvider('search', {
             onDidChange: (listener, thisArg) => {
               const model = editor.getModel();
               // refresh at first loading
               if (model) {
-                buildSearchToken(model);
-                refreshActionMarks(editor, searchTokens);
+                searchTokensRef.current = buildSearchToken(model);
+                refreshActionMarksHandler(editor);
               }
               return editor.onDidChangeCursorPosition((acc) => {
                 // only updates the searchTokens when content edited, past, redo, undo
@@ -112,14 +123,14 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
                     return;
                   }
 
-                  buildSearchToken(model);
+                  searchTokensRef.current = buildSearchToken(model);
 
-                  refreshActionMarks(editor, searchTokens);
+                  refreshActionMarksHandler(editor);
                 }
 
                 const newAction = getAction(acc.position);
-                if (newAction && newAction !== currentAction) {
-                  currentAction = newAction;
+                if (newAction && newAction !== currentActionRef.current) {
+                  currentActionRef.current = newAction;
                   return listener(thisArg);
                 }
               });
