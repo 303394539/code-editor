@@ -1,4 +1,4 @@
-import { isEqual, isString, uniqWith } from 'lodash';
+import { isEqual, isString, uniqBy, uniqWith } from 'lodash';
 
 import { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 
@@ -14,7 +14,7 @@ import {
 import type { IDisposable } from 'monaco-editor';
 import MonacoEditor from 'monaco-editor';
 import { languages, Range } from 'monaco-editor/esm/vs/editor/editor.api';
-// import type { SqlLanguage } from 'sql-formatter';
+import type { FormatOptionsWithLanguage } from 'sql-formatter';
 import { format } from 'sql-formatter';
 
 import type { EditorInstance, EditorProps, HintDataItem } from '../editor';
@@ -53,6 +53,7 @@ export type SQLEditorProps = Omit<
     | 'PostgreSQL'
     | 'SparkSQL'
     | 'TrinoSQL';
+  formatOptions?: FormatOptionsWithLanguage;
 };
 
 const typeMap = {
@@ -123,19 +124,31 @@ const clearDisposableList = () => {
 };
 
 const Component = forwardRef<EditorInstance, SQLEditorProps>(
-  ({ type = 'MySQL', ...props }, ref) => {
+  ({ type = 'MySQL', formatOptions, ...props }, ref) => {
     const parserRef = useRef(new typeMap[type]());
 
     const languageMemo = useMemo(() => languageMap[type], [type]);
 
+    const formatOptionsMemo = useMemo<FormatOptionsWithLanguage>(() => {
+      const { paramTypes, ...more } = formatOptions || {};
+      const { custom = [], ...moreParamTypes } = paramTypes || {};
+      return {
+        language: 'sql',
+        tabWidth: 2,
+        ...more,
+        paramTypes: {
+          ...moreParamTypes,
+          custom: uniqBy(
+            [{ regex: String.raw`(\S+)?\{.+?\}` }].concat(custom),
+            'regex',
+          ),
+        },
+      };
+    }, [formatOptions]);
+
     const formatterHandler = useCallback(
-      (value?: string) =>
-        format(value || '', {
-          // language: formatLanguageMap[type],
-          tabWidth: 2,
-          paramTypes: { custom: [{ regex: String.raw`(\S+)?\{.+?\}` }] },
-        }),
-      [],
+      (value?: string) => format(value || '', formatOptionsMemo),
+      [formatOptionsMemo],
     );
 
     const onHintDataHandler = useCallback(
