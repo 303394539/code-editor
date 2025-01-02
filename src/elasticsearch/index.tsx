@@ -131,7 +131,7 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
               //   : [];
 
               return {
-                lenses : [],
+                lenses: [],
                 dispose: () => {},
               };
             },

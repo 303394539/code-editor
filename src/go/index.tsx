@@ -7,7 +7,9 @@ import keywords from './keywords';
 export type GoEditorProps = Omit<EditorProps, 'language' | 'defaultKeywords'>;
 
 const Component = forwardRef<EditorInstance, GoEditorProps>((props, ref) => {
-  return <Editor {...props} ref={ref} language="go" defaultKeywords={keywords} />;
+  return (
+    <Editor {...props} ref={ref} language="go" defaultKeywords={keywords} />
+  );
 });
 
 export default Component;

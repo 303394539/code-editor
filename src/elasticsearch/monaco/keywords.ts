@@ -1,6 +1,15 @@
 import { dsqlTree, getKeywordsFromDsqlTree } from './dsql';
 
-const methods = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'PATCH', 'TRACE'];
+const methods = [
+  'GET',
+  'POST',
+  'PUT',
+  'DELETE',
+  'HEAD',
+  'OPTIONS',
+  'PATCH',
+  'TRACE',
+];
 const paths = [
   '_search',
   '_cat',
@@ -38,6 +47,8 @@ const paths = [
 
 const dsqlKeywords = getKeywordsFromDsqlTree(dsqlTree);
 
-const keywords = Array.from(new Set([...methods, ...paths, ...dsqlKeywords])).filter(Boolean);
+const keywords = Array.from(
+  new Set([...methods, ...paths, ...dsqlKeywords]),
+).filter(Boolean);
 
 export { keywords, paths };

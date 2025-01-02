@@ -13,68 +13,92 @@ export const buildSearchToken = (model: monaco.editor.IModel) => {
     lineContent: model.getLineContent(i + 1),
   }));
 
-  const commands = lines.filter(({ lineContent }) => executeActions.regexp.test(lineContent));
+  const commands = lines.filter(({ lineContent }) =>
+    executeActions.regexp.test(lineContent),
+  );
 
-  searchTokens = commands.map(({ lineContent, lineNumber }, index, commands) => {
-    const [rawPath, queryParams] = lineContent.split('?');
-    const rawCmd = rawPath.split(/[\/\s]+/);
-    const method = rawCmd[0]?.toUpperCase();
-    const indexName = rawCmd[1]?.startsWith('_') ? undefined : rawCmd[1];
-    const path = rawCmd.slice(indexName ? 2 : 1, rawCmd.length).join('/');
+  searchTokens = commands.map(
+    ({ lineContent, lineNumber }, index, commands) => {
+      const [rawPath, queryParams] = lineContent.split('?');
+      const rawCmd = rawPath.split(/[\/\s]+/);
+      const method = rawCmd[0]?.toUpperCase();
+      const indexName = rawCmd[1]?.startsWith('_') ? undefined : rawCmd[1];
+      const path = rawCmd.slice(indexName ? 2 : 1, rawCmd.length).join('/');
 
-    const nexCommandLineNumber = commands[index + 1]?.lineNumber
-      ? commands[index + 1]?.lineNumber - 1
-      : lines.length;
+      const nexCommandLineNumber = commands[index + 1]?.lineNumber
+        ? commands[index + 1]?.lineNumber - 1
+        : lines.length;
 
-    const endLineNumber =
-      lines
-        .slice(lineNumber, nexCommandLineNumber)
-        .reverse()
-        .find(({ lineContent }) => lineContent.trim().endsWith('}'))?.lineNumber || lineNumber;
+      const endLineNumber =
+        lines
+          .slice(lineNumber, nexCommandLineNumber)
+          .reverse()
+          .find(({ lineContent }) => lineContent.trim().endsWith('}'))
+          ?.lineNumber || lineNumber;
 
-    const qdsl = lines
-      .slice(lineNumber, endLineNumber)
-      .map(({ lineContent }) => lineContent)
-      .join('\n');
+      const qdsl = lines
+        .slice(lineNumber, endLineNumber)
+        .map(({ lineContent }) => lineContent)
+        .join('\n');
 
-    return {
-      qdsl,
-      method,
-      index: indexName,
-      path,
-      queryParams,
-      position: {
-        startLineNumber: lineNumber,
-        endLineNumber,
-        startColumn: 1,
-        endColumn: get(lines, `[${endLineNumber}].lineContent.length`, 0),
-      },
-    } as SearchAction;
-  });
+      return {
+        qdsl,
+        method,
+        index: indexName,
+        path,
+        queryParams,
+        position: {
+          startLineNumber: lineNumber,
+          endLineNumber,
+          startColumn: 1,
+          endColumn: get(lines, `[${endLineNumber}].lineContent.length`, 0),
+        },
+      } as SearchAction;
+    },
+  );
 
   return searchTokens;
 };
-export const getAction = (position: monaco.Range | monaco.Position | null | undefined) => {
+export const getAction = (
+  position: monaco.Range | monaco.Position | null | undefined,
+) => {
   if (!position) {
     return undefined;
   }
-  const startLine = get(position, 'startLineNumber', get(position, 'lineNumber', -1));
-  const endLine = get(position, 'endLineNumber', get(position, 'lineNumber', -1));
-  return searchTokens.find(({ position: { startLineNumber, endLineNumber } }) => {
-    return startLine >= startLineNumber && endLine <= endLineNumber;
-  });
+  const startLine = get(
+    position,
+    'startLineNumber',
+    get(position, 'lineNumber', -1),
+  );
+  const endLine = get(
+    position,
+    'endLineNumber',
+    get(position, 'lineNumber', -1),
+  );
+  return searchTokens.find(
+    ({ position: { startLineNumber, endLineNumber } }) => {
+      return startLine >= startLineNumber && endLine <= endLineNumber;
+    },
+  );
 };
 
 export const executionGutterClass = 'execute-button-decoration';
-export const getActionMarksDecorations = (searchTokens: SearchAction[]): Array<Decoration> => {
+export const getActionMarksDecorations = (
+  searchTokens: SearchAction[],
+): Array<Decoration> => {
   return searchTokens
     .map(({ position }) => ({
       id: position.startLineNumber,
       range: { ...position, endLineNumber: position.startLineNumber },
-      options: { isWholeLine: true, linesDecorationsClassName: executionGutterClass },
+      options: {
+        isWholeLine: true,
+        linesDecorationsClassName: executionGutterClass,
+      },
     }))
     .filter(Boolean)
-    .sort((a, b) => (a as Decoration).id - (b as Decoration).id) as Array<Decoration>;
+    .sort(
+      (a, b) => (a as Decoration).id - (b as Decoration).id,
+    ) as Array<Decoration>;
 };
 export const buildCodeLens = (
   position: monaco.Position,
@@ -102,11 +126,18 @@ export const buildCodeLens = (
     command: {
       id: autoIndentCmdId!,
       title: 'Auto Indent',
-      arguments: [{ ...action.position, startLineNumber: action.position.startLineNumber + 1 }],
+      arguments: [
+        {
+          ...action.position,
+          startLineNumber: action.position.startLineNumber + 1,
+        },
+      ],
     },
   };
 
-  return [autoIndent, copyCurl].filter(Boolean) as Array<monaco.languages.CodeLens>;
+  return [autoIndent, copyCurl].filter(
+    Boolean,
+  ) as Array<monaco.languages.CodeLens>;
 };
 
 export const formatQDSL = (
@@ -123,13 +154,14 @@ export const formatQDSL = (
   });
 
   const bulkAction = searchTokens.find(
-    ({ path, position }) => path.includes('_bulk') && position.startLineNumber === startLineNumber,
+    ({ path, position }) =>
+      path.includes('_bulk') && position.startLineNumber === startLineNumber,
   );
   if (!bulkAction) {
     return JSON.stringify(JSON5.parse(content), null, 2);
   }
-  const lines = content.split('\n').map(line => JSON5.parse(line));
-  return lines.map(line => JSON.stringify(line)).join('\n');
+  const lines = content.split('\n').map((line) => JSON5.parse(line));
+  return lines.map((line) => JSON.stringify(line)).join('\n');
 };
 
 const replaceTripleQuotes = (value: string) =>
@@ -137,18 +169,23 @@ const replaceTripleQuotes = (value: string) =>
     .replace(/'''(.*?)'''/gs, (_, match) => JSON.stringify(match))
     .replace(/"""(.*?)"""/gs, (_, match) => JSON.stringify(match));
 
-export const transformQDSL = ({ path, qdsl }: Pick<SearchAction, 'path' | 'qdsl'>) => {
+export const transformQDSL = ({
+  path,
+  qdsl,
+}: Pick<SearchAction, 'path' | 'qdsl'>) => {
   try {
     const bulkAction = path.includes('_bulk');
     if (bulkAction) {
       const bulkQdsl = qdsl
         .split('\n')
-        .map(line => JSON.stringify(JSON5.parse(line)))
+        .map((line) => JSON.stringify(JSON5.parse(line)))
         .join('\n');
       return `${bulkQdsl}\n`;
     }
 
-    return qdsl ? JSON.stringify(JSON5.parse(replaceTripleQuotes(qdsl)), null, 2) : undefined;
+    return qdsl
+      ? JSON.stringify(JSON5.parse(replaceTripleQuotes(qdsl)), null, 2)
+      : undefined;
   } catch (err) {
     throw new CustomError(400, (err as Error).message);
   }

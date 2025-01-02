@@ -13,6 +13,6 @@ module.exports = {
     'no-useless-escape': 0,
     '@typescript-eslint/no-unused-expressions': 0,
     '@typescript-eslint/no-use-before-define': 0,
-    '@typescript-eslint/no-non-null-assertion': 0
+    '@typescript-eslint/no-non-null-assertion': 0,
   },
 };

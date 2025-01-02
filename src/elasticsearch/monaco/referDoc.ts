@@ -140,7 +140,11 @@ const actionRegexMap: { [key in ActionType]: RegExp } = {
   PUT_TEMPLATE: /PUT \/_template\/\w+/,
 };
 
-export const getActionApiDoc = (engine: EngineType, version: string, action: SearchAction) => {
+export const getActionApiDoc = (
+  engine: EngineType,
+  version: string,
+  action: SearchAction,
+) => {
   const { APIS } = getDocLinks(engine, version);
   const matchedAction = Object.entries(actionRegexMap).find(([, regex]) =>
     `${action.method} /${action.path}`.match(regex),
@@ -194,7 +198,9 @@ const getDocLinks = (engine: EngineType, version: string) => {
       },
     },
     // @TODO docs link for OpenSearch
-    [EngineType.OPENSEARCH]: { APIS: {} } as { APIS: { [key in ActionType]: string } },
+    [EngineType.OPENSEARCH]: { APIS: {} } as {
+      APIS: { [key in ActionType]: string };
+    },
   };
 
   return linksMap[engine];

@@ -12,7 +12,12 @@ export type PythonEditorProps = Omit<
 const Component = forwardRef<EditorInstance, PythonEditorProps>(
   (props, ref) => {
     return (
-      <Editor {...props} ref={ref} language="python" defaultKeywords={keywords} />
+      <Editor
+        {...props}
+        ref={ref}
+        language="python"
+        defaultKeywords={keywords}
+      />
     );
   },
 );

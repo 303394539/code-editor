@@ -103,7 +103,8 @@ const getSubDsqlTree = (action: string, path: Array<string>) => {
     return;
   }
   for (const key of path) {
-    const newSubTree = get(subTree, `children.${key}`) || get(subTree, 'children.*');
+    const newSubTree =
+      get(subTree, `children.${key}`) || get(subTree, 'children.*');
     if (newSubTree) {
       subTree = newSubTree;
     } else {
@@ -131,4 +132,4 @@ const getKeywordsFromDsqlTree = (tree: typeof dsqlTree): Array<string> => {
   );
 };
 
-export { dsqlTree, getKeywordsFromDsqlTree,getSubDsqlTree };
+export { dsqlTree, getKeywordsFromDsqlTree, getSubDsqlTree };

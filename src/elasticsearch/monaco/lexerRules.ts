@@ -19,7 +19,8 @@ export const search = {
 
     // we include these common regular expressions
     symbols: /[=><!~?:&|+\-*\\^%]+/,
-    escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+    escapes:
+      /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     digits: /\d+(_+\d+)*/,
     octaldigits: /[0-7]+(_+[0-7]+)*/,
     binarydigits: /[0-1]+(_+[0-1]+)*/,
@@ -28,7 +29,10 @@ export const search = {
     // The main tokenizer for our languages
     tokenizer: {
       root: [
-        [/^(GET|POST|PUT|DELETE)(\s+[a-zA-Z0-9_\/-?\-&,.]*)/, ['type', 'regexp']],
+        [
+          /^(GET|POST|PUT|DELETE)(\s+[a-zA-Z0-9_\/-?\-&,.]*)/,
+          ['type', 'regexp'],
+        ],
         {
           regex: '{',
           action: {
@@ -97,7 +101,10 @@ export const search = {
         [/[^"'.\\/]*?\s*(?=:)/, { token: 'variable' }],
         [/"""|'''/, { token: 'string_literal', next: 'string_literal' }],
         [/0[xX][0-9a-fA-F]+\b/, { token: 'constant.numeric' }],
-        [/[+-]?\d+(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?\b/, { token: 'constant.numeric' }],
+        [
+          /[+-]?\d+(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?\b/,
+          { token: 'constant.numeric' },
+        ],
         [/(?:true|false)\b/, { token: 'constant.boolean' }],
         // strings
         [/["']([^'"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
