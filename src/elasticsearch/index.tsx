@@ -52,57 +52,60 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
       ) as unknown as Decoration[];
     }, []);
 
-    const formatterHandler = useCallback((value?: string) => {
-      if (isString(value) && value.length) {
-        try {
-          if (editorRef.current) {
-            const editor = editorRef.current;
-            const model = editor.getModel();
-            if (model) {
-              let i = 0;
-              const callback = () => {
-                if (i < searchTokensRef.current.length) {
-                  const action = searchTokensRef.current[i];
-                  const { startLineNumber, endLineNumber } = action.position;
-                  const formatted = formatQDSL(
-                    searchTokensRef.current,
-                    model,
-                    action.position,
-                  );
-                  model.pushEditOperations(
-                    [],
-                    [
-                      {
-                        range: {
-                          startLineNumber: startLineNumber + 1,
-                          startColumn: 1,
-                          endLineNumber,
-                          endColumn: model.getLineLength(endLineNumber) + 1,
+    const formatterHandler = useCallback(
+      (value?: string) => {
+        if (isString(value) && value.length) {
+          try {
+            if (editorRef.current) {
+              const editor = editorRef.current;
+              const model = editor.getModel();
+              if (model) {
+                let i = 0;
+                const callback = () => {
+                  if (i < searchTokensRef.current.length) {
+                    const action = searchTokensRef.current[i];
+                    const { startLineNumber, endLineNumber } = action.position;
+                    const formatted = formatQDSL(
+                      searchTokensRef.current,
+                      model,
+                      action.position,
+                    );
+                    model.pushEditOperations(
+                      [],
+                      [
+                        {
+                          range: {
+                            startLineNumber: startLineNumber + 1,
+                            startColumn: 1,
+                            endLineNumber,
+                            endColumn: model.getLineLength(endLineNumber) + 1,
+                          },
+                          text: formatted,
                         },
-                        text: formatted,
-                      },
-                    ],
-                    // @ts-ignore
-                    () => [],
-                  );
-                  searchTokensRef.current = buildSearchToken(model);
-                  refreshActionMarksHandler(editor);
-                  i++;
+                      ],
+                      // @ts-ignore
+                      () => [],
+                    );
+                    searchTokensRef.current = buildSearchToken(model);
+                    refreshActionMarksHandler(editor);
+                    i++;
+                    callback();
+                  }
+                };
+                if (searchTokensRef.current.length) {
                   callback();
                 }
-              };
-              if (searchTokensRef.current.length) {
-                callback();
+                return model.getValue();
               }
-              return model.getValue();
             }
+          } catch (error) {
+            console.error(error);
           }
-        } catch (error) {
-          console.error(error);
         }
-      }
-      return value || '';
-    }, []);
+        return value || '';
+      },
+      [refreshActionMarksHandler],
+    );
     const onDidMountHandler = useCallback<Required<EditorProps>['onDidMount']>(
       (editor, monaco) => {
         editorRef.current = editor;
@@ -149,7 +152,7 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
           }),
         );
       },
-      [],
+      [refreshActionMarksHandler],
     );
     useEffect(() => {
       return () => {
