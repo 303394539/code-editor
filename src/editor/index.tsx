@@ -52,7 +52,10 @@ export type EditorProps = AutoOption & {
   onHintData?: (monaco: typeof MonacoEditor, hintData?: any) => void;
   readOnly?: boolean;
   defaultKeywords?: string[];
-} & Pick<ReactMonacoEditorProps, 'editorWillMount' | 'editorWillUnmount'>;
+  onWillMount?: ReactMonacoEditorProps['editorWillMount'];
+  onDidMount?: ReactMonacoEditorProps['editorDidMount'];
+  onWillUnmount?: ReactMonacoEditorProps['editorWillUnmount'];
+};
 
 export const Kind = languages.CompletionItemKind;
 
@@ -88,8 +91,9 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     onHintData,
     readOnly,
     defaultKeywords = [],
-    editorWillMount,
-    editorWillUnmount,
+    onWillMount,
+    onDidMount,
+    onWillUnmount,
   } = props;
   const optionsMemo =
     useMemo<editor.IStandaloneEditorConstructionOptions>(() => {
@@ -177,8 +181,8 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     Required<ReactMonacoEditorProps>['editorWillMount']
   >(
     (monaco) => {
-      if (isFunction(editorWillMount)) {
-        editorWillMount(monaco);
+      if (isFunction(onWillMount)) {
+        onWillMount(monaco);
       }
       monacoRef.current = monaco;
       if (isFunction(onHintData)) {
@@ -187,14 +191,14 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
         onHintDataHandler(monaco, hintData);
       }
     },
-    [editorWillMount, hintData, onHintData, onHintDataHandler],
+    [onWillMount, hintData, onHintData, onHintDataHandler],
   );
   const editorDidMountHandler = useCallback<
     Required<ReactMonacoEditorProps>['editorWillUnmount']
   >(
     (editor, monaco) => {
-      if (isFunction(editorWillUnmount)) {
-        editorWillUnmount(editor, monaco);
+      if (isFunction(onDidMount)) {
+        onDidMount(editor, monaco);
       }
       editorRef.current = editor;
       if (autoFocus) {
@@ -204,7 +208,7 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
         formatHandler();
       }
     },
-    [autoFocus, autoFormat, editorWillUnmount, formatHandler, formatter],
+    [autoFocus, autoFormat, onDidMount, formatHandler, formatter],
   );
   const onResizeHandler = useCallback(
     () => raf(() => editorRef.current?.layout()),
@@ -244,6 +248,7 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
       onChange={onChangeHandler}
       editorWillMount={editorWillMountHandler}
       editorDidMount={editorDidMountHandler}
+      editorWillUnmount={onWillUnmount}
     />
   );
 });

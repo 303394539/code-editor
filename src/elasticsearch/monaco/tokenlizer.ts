@@ -126,10 +126,10 @@ export const formatQDSL = (
     ({ path, position }) => path.includes('_bulk') && position.startLineNumber === startLineNumber,
   );
   if (!bulkAction) {
-    return JSON5.stringify(JSON5.parse(content), null, 2);
+    return JSON.stringify(JSON5.parse(content), null, 2);
   }
   const lines = content.split('\n').map(line => JSON5.parse(line));
-  return lines.map(line => JSON5.stringify(line)).join('\n');
+  return lines.map(line => JSON.stringify(line)).join('\n');
 };
 
 const replaceTripleQuotes = (value: string) =>
