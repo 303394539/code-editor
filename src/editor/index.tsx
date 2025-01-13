@@ -19,8 +19,8 @@ import type { EditorLanguage } from 'monaco-editor/esm/metadata';
 import { editor, languages } from 'monaco-editor/esm/vs/editor/editor.api';
 
 export type EditorInstance = {
-  editor?: editor.IStandaloneCodeEditor;
-  monaco?: typeof MonacoEditor;
+  getEditor: () => editor.IStandaloneCodeEditor | void;
+  getMonaco: () => typeof MonacoEditor | void;
   format: () => void;
   setValue: (value: string) => void;
 };
@@ -231,8 +231,8 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
   useImperativeHandle(
     ref,
     () => ({
-      editor: editorRef.current,
-      monaco: monacoRef.current,
+      getEditor: () => editorRef.current,
+      getMonaco: () => monacoRef.current,
       format: formatHandler,
       setValue: setValueHandler,
     }),

@@ -34,7 +34,7 @@ const clearDisposableList = () => {
 };
 
 const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
-  (props, ref) => {
+  ({ value, ...props }, ref) => {
     const editorRef = useRef<EditorInstance['editor']>();
 
     const searchTokensRef = useRef<SearchAction[]>([]);
@@ -52,6 +52,28 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
       ) as unknown as Decoration[];
     }, []);
 
+    const cleanHandler = useCallback((v?: string) => {
+      return (
+        v
+          /**
+           * 修复method之后的换行
+           */
+          ?.replace(/\s+(\n|\r)+\s+\//gu, (e) => e.replace(/[\s\n\r]+/u, `${decodeURIComponent('%20')}`))
+          /**
+           * 修复结尾{为换行
+           */
+          ?.replace(/([a-zA-Z0-9/]{1})(\s+)?\{/gu, (e) =>
+            e.replace(/(\s+)?\{/u, `${decodeURIComponent('%0A')}{`),
+          )
+          /**
+           * 修复}接method后为换行
+           */
+          .replace(/\}{1}(GET|DELETE|POST|PUT)/giu, (e) =>
+            e.replace(/\}/, `}${decodeURIComponent('%0A')}${decodeURIComponent('%0A')}`),
+          ) || ''
+      );
+    }, []);
+
     const formatterHandler = useCallback(
       (value?: string) => {
         if (isString(value) && value.length) {
@@ -60,6 +82,9 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
               const editor = editorRef.current;
               const model = editor.getModel();
               if (model) {
+                model.setValue(cleanHandler(value));
+                searchTokensRef.current = buildSearchToken(model);
+                refreshActionMarksHandler(editor);
                 let i = 0;
                 const callback = () => {
                   if (i < searchTokensRef.current.length) {
@@ -106,6 +131,7 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
       },
       [refreshActionMarksHandler],
     );
+
     const onDidMountHandler = useCallback<Required<EditorProps>['onDidMount']>(
       (editor, monaco) => {
         editorRef.current = editor;
@@ -164,6 +190,7 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
         formatter={formatterHandler}
         {...props}
         ref={ref}
+        value={value}
         language="search"
         onDidMount={onDidMountHandler}
       />
