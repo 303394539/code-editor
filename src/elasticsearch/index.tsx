@@ -3,6 +3,7 @@ import { isString } from 'lodash';
 import { forwardRef, useCallback, useEffect, useRef } from 'react';
 
 import type { IDisposable } from 'monaco-editor';
+import type { editor } from 'monaco-editor/esm/vs/editor/editor.api';
 
 import type { EditorInstance, EditorProps } from '../editor';
 import Editor from '../editor';
@@ -35,7 +36,7 @@ const clearDisposableList = () => {
 
 const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
   ({ value, ...props }, ref) => {
-    const editorRef = useRef<EditorInstance['editor']>();
+    const editorRef = useRef<editor.IStandaloneCodeEditor>();
 
     const searchTokensRef = useRef<SearchAction[]>([]);
     const executeDecorationsRef = useRef<(Decoration | string)[]>([]);
@@ -58,7 +59,9 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
           /**
            * 修复method之后的换行
            */
-          ?.replace(/\s+(\n|\r)+\s+\//gu, (e) => e.replace(/[\s\n\r]+/u, `${decodeURIComponent('%20')}`))
+          ?.replace(/\s+(\n|\r)+\s+\//gu, (e) =>
+            e.replace(/[\s\n\r]+/u, `${decodeURIComponent('%20')}`),
+          )
           /**
            * 修复结尾{为换行
            */
@@ -69,7 +72,10 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
            * 修复}接method后为换行
            */
           .replace(/\}{1}(GET|DELETE|POST|PUT)/giu, (e) =>
-            e.replace(/\}/, `}${decodeURIComponent('%0A')}${decodeURIComponent('%0A')}`),
+            e.replace(
+              /\}/,
+              `}${decodeURIComponent('%0A')}${decodeURIComponent('%0A')}`,
+            ),
           ) || ''
       );
     }, []);
@@ -129,7 +135,7 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
         }
         return value || '';
       },
-      [refreshActionMarksHandler],
+      [cleanHandler, refreshActionMarksHandler],
     );
 
     const onDidMountHandler = useCallback<Required<EditorProps>['onDidMount']>(

@@ -16,7 +16,8 @@ import type { ChangeHandler } from 'react-monaco-editor/lib/types';
 import type { IDisposable } from 'monaco-editor';
 import MonacoEditor from 'monaco-editor';
 import type { EditorLanguage } from 'monaco-editor/esm/metadata';
-import { editor, languages } from 'monaco-editor/esm/vs/editor/editor.api';
+import type { editor } from 'monaco-editor/esm/vs/editor/editor.api';
+import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
 
 export type EditorInstance = {
   getEditor: () => editor.IStandaloneCodeEditor | void;
