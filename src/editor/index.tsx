@@ -163,6 +163,12 @@ function InternalComponent<T extends Mode = 'normal'>(
       domReadOnly: true,
       ...monacoEditorOptions,
       readOnly,
+      readOnlyMessage: {
+        value: '不可编辑',
+        supportThemeIcons: true,
+        supportHtml: true,
+        ...monacoEditorOptions?.readOnlyMessage,
+      },
     };
   }, [monacoEditorOptions, readOnly]);
   const editorRef = useRef<ModeMap[T]['editor']>();
