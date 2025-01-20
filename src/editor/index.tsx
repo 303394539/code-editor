@@ -1,6 +1,7 @@
 import { isEqual, isFunction, uniqWith } from 'lodash';
 import raf from 'raf';
 
+import type { ReactElement, Ref } from 'react';
 import {
   forwardRef,
   useCallback,
@@ -9,8 +10,13 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import type { MonacoEditorProps as ReactMonacoEditorProps } from 'react-monaco-editor';
-import ReactMonacoEditor from 'react-monaco-editor';
+import type {
+  MonacoDiffEditorProps as ReactMonacoDiffEditorProps,
+  MonacoEditorProps as ReactMonacoEditorProps,
+} from 'react-monaco-editor';
+import ReactMonacoEditor, {
+  MonacoDiffEditor as ReactMonacoDiffEditor,
+} from 'react-monaco-editor';
 import type { ChangeHandler } from 'react-monaco-editor/lib/types';
 
 import type { IDisposable } from 'monaco-editor';
@@ -19,12 +25,53 @@ import type { EditorLanguage } from 'monaco-editor/esm/metadata';
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api';
 import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
 
-export type EditorInstance = {
-  getEditor: () => editor.IStandaloneCodeEditor | void;
-  getMonaco: () => typeof MonacoEditor | void;
-  format: () => void;
-  setValue: (value: string) => void;
+export type ModeMap = {
+  normal: {
+    editor: editor.IStandaloneCodeEditor;
+    options: Omit<editor.IStandaloneEditorConstructionOptions, 'readOnly'>;
+    formatErrorEvent: { error?: any; value?: string };
+    instance: {
+      getEditor: () => editor.IStandaloneCodeEditor | void;
+      setValue: (value: string) => void;
+      format: () => void;
+    };
+    props: {
+      theme?: ReactMonacoEditorProps['theme'];
+      onWillMount?: ReactMonacoEditorProps['editorWillMount'];
+      onDidMount?: ReactMonacoEditorProps['editorDidMount'];
+      onWillUnmount?: ReactMonacoEditorProps['editorWillUnmount'];
+    };
+  };
+  diff: {
+    editor: editor.IStandaloneDiffEditor;
+    options: Omit<editor.IStandaloneDiffEditorConstructionOptions, 'readOnly'>;
+    formatErrorEvent: {
+      error?: any;
+      value?: string;
+      original?: string;
+    };
+    instance: {
+      getEditor: () => editor.IStandaloneDiffEditor | void;
+      setValue: (value: string) => void;
+      setOriginal: (value: string) => void;
+      format: (scope?: ('original' | 'value')[]) => void;
+    };
+    props: {
+      theme?: ReactMonacoDiffEditorProps['theme'];
+      onWillMount?: ReactMonacoDiffEditorProps['editorWillMount'];
+      onDidMount?: ReactMonacoDiffEditorProps['editorDidMount'];
+      onWillUnmount?: ReactMonacoDiffEditorProps['editorWillUnmount'];
+    } & Pick<ReactMonacoDiffEditorProps, 'original'>;
+  };
 };
+
+export type Mode = keyof ModeMap;
+
+export type MonacoType = typeof MonacoEditor;
+
+export type EditorInstance<T extends Mode = 'normal'> = {
+  getMonaco: () => MonacoType | void;
+} & ModeMap[T]['instance'];
 
 export type HintDataItem = {
   label?: string;
@@ -40,23 +87,32 @@ type AutoOption = {
   autoFocus?: boolean;
 };
 
-export type EditorProps = AutoOption & {
+export type EditorProps<T extends Mode = 'normal'> = AutoOption & {
+  mode?: T;
   defaultValue?: string;
   value?: string;
   onChange?: ChangeHandler;
-  theme?: ReactMonacoEditorProps['theme'];
-  monacoEditorOptions?: editor.IStandaloneEditorConstructionOptions;
+  monacoEditorOptions?: ModeMap[T]['options'];
   language: EditorLanguage | string;
   formatter?: (value?: string) => string | undefined;
-  onFormatError?: (e: { error?: any; value?: string }) => void;
+  onFormatError?: (e: ModeMap[T]['formatErrorEvent']) => void;
   hintData?: any;
-  onHintData?: (monaco: typeof MonacoEditor, hintData?: any) => void;
+  onHintData?: (monaco: MonacoType, hintData?: any) => void;
   readOnly?: boolean;
   defaultKeywords?: string[];
-  onWillMount?: ReactMonacoEditorProps['editorWillMount'];
-  onDidMount?: ReactMonacoEditorProps['editorDidMount'];
-  onWillUnmount?: ReactMonacoEditorProps['editorWillUnmount'];
+} & ModeMap[T]['props'];
+
+export type EditorStaticInterface = {
+  displayName: string;
 };
+
+export type InternalEditorType = <T extends Mode = 'normal'>(
+  props: EditorProps<T> & {
+    ref?: Ref<EditorInstance<T>>;
+  },
+) => ReactElement;
+
+export type EditorInterface = InternalEditorType & EditorStaticInterface;
 
 export const Kind = languages.CompletionItemKind;
 
@@ -76,8 +132,12 @@ const clearDisposableList = () => {
   disposableList = [];
 };
 
-const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
+function InternalComponent<T extends Mode = 'normal'>(
+  props: EditorProps<T>,
+  ref?: Ref<EditorInstance<T>>,
+) {
   const {
+    mode = 'normal',
     defaultValue,
     value,
     hintData,
@@ -96,35 +156,78 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     onDidMount,
     onWillUnmount,
   } = props;
-  const optionsMemo =
-    useMemo<editor.IStandaloneEditorConstructionOptions>(() => {
-      return {
-        contextmenu: false,
-        domReadOnly: true,
-        ...monacoEditorOptions,
-        readOnly,
-      };
-    }, [monacoEditorOptions, readOnly]);
-  const editorRef = useRef<editor.IStandaloneCodeEditor>();
-  const monacoRef = useRef<typeof MonacoEditor>();
+  const { original } = props as EditorProps<'diff'>;
+  const optionsMemo = useMemo<ModeMap[T]['options']>(() => {
+    return {
+      contextmenu: false,
+      domReadOnly: true,
+      ...monacoEditorOptions,
+      readOnly,
+    };
+  }, [monacoEditorOptions, readOnly]);
+  const editorRef = useRef<ModeMap[T]['editor']>();
+  const monacoRef = useRef<MonacoType>();
 
-  const formatHandler = useCallback(() => {
-    try {
-      if (isFunction(formatter)) {
-        editorRef.current?.setValue(
-          formatter(editorRef.current?.getValue()) || '',
-        );
+  const formatHandler = useCallback<ModeMap['diff']['instance']['format']>(
+    (scope) => {
+      if (mode === 'diff') {
+        const $scope = scope || [];
+        const editor = editorRef.current as ModeMap['diff']['editor'];
+        const originalModel = editor?.getModel()?.original;
+        const modifiedModel = editor?.getModel()?.modified;
+        try {
+          if (isFunction(formatter)) {
+            if (!$scope.length || $scope.includes('original')) {
+              originalModel?.setValue(
+                formatter(originalModel?.getValue()) || '',
+              );
+            }
+            if (!$scope.length || $scope.includes('value')) {
+              modifiedModel?.setValue(
+                formatter(modifiedModel?.getValue()) || '',
+              );
+            }
+          } else {
+            editor.getSupportedActions().forEach((action) => {
+              const { id } = action;
+              if (id.includes('format')) {
+                raf(() => action?.run());
+              }
+            });
+          }
+        } catch (error) {
+          if (isFunction(onFormatError)) {
+            onFormatError({
+              original: originalModel?.getValue(),
+              value: modifiedModel?.getValue(),
+              error,
+            });
+          }
+        }
       } else {
-        raf(() =>
-          editorRef.current?.getAction('editor.action.formatDocument')?.run(),
-        );
+        const editor = editorRef.current as ModeMap['normal']['editor'];
+        try {
+          if (isFunction(formatter)) {
+            editor
+              ?.getModel()
+              ?.setValue(formatter(editor?.getModel()?.getValue()) || '');
+          } else {
+            editor.getSupportedActions().forEach((action) => {
+              const { id } = action;
+              if (id.includes('format')) {
+                raf(() => action?.run());
+              }
+            });
+          }
+        } catch (error) {
+          if (isFunction(onFormatError)) {
+            onFormatError({ value: editor?.getModel()?.getValue(), error });
+          }
+        }
       }
-    } catch (error) {
-      if (isFunction(onFormatError)) {
-        onFormatError({ value: editorRef.current?.getValue(), error });
-      }
-    }
-  }, [formatter, onFormatError]);
+    },
+    [formatter, mode, onFormatError],
+  );
 
   const onChangeHandler = useCallback(
     (v: string, e: editor.IModelContentChangedEvent) => {
@@ -140,12 +243,31 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
       if (autoFormat && isFunction(formatter)) {
         $v = formatter(v) || '';
       }
-      editorRef.current?.setValue($v);
+      if (mode === 'diff') {
+        const editor = editorRef.current as ModeMap['diff']['editor'];
+        const modifiedModel = editor?.getModel()?.modified;
+        modifiedModel?.setValue($v);
+      } else {
+        const editor = editorRef.current as ModeMap['normal']['editor'];
+        editor?.setValue($v);
+      }
+    },
+    [autoFormat, formatter, mode],
+  );
+  const setOriginalHandler = useCallback(
+    (v: string) => {
+      let $v = v || '';
+      if (autoFormat && isFunction(formatter)) {
+        $v = formatter(v) || '';
+      }
+      const editor = editorRef.current as ModeMap['diff']['editor'];
+      const originalModel = editor?.getModel()?.original;
+      originalModel?.setValue($v);
     },
     [autoFormat, formatter],
   );
   const onHintDataHandler = useCallback(
-    (monaco: typeof MonacoEditor, hintData?: HintData) => {
+    (monaco: MonacoType, hintData?: HintData) => {
       clearDisposableList();
       if (defaultKeywords.length) {
         disposableList.push(
@@ -178,10 +300,8 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     },
     [defaultKeywords, language],
   );
-  const editorWillMountHandler = useCallback<
-    Required<ReactMonacoEditorProps>['editorWillMount']
-  >(
-    (monaco) => {
+  const editorWillMountHandler = useCallback(
+    (monaco: MonacoType) => {
       if (isFunction(onWillMount)) {
         onWillMount(monaco);
       }
@@ -194,22 +314,35 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
     },
     [onWillMount, hintData, onHintData, onHintDataHandler],
   );
-  const editorDidMountHandler = useCallback<
-    Required<ReactMonacoEditorProps>['editorWillUnmount']
-  >(
-    (editor, monaco) => {
+  const editorDidMountHandler = useCallback(
+    (editor: ModeMap[T]['editor'], monaco: MonacoType) => {
       if (isFunction(onDidMount)) {
-        onDidMount(editor, monaco);
+        onDidMount(
+          editor as ModeMap['normal']['editor'] & ModeMap['diff']['editor'],
+          monaco,
+        );
       }
       editorRef.current = editor;
       if (autoFocus) {
         editor.focus();
       }
-      if (autoFormat && isFunction(formatter) && editor.getValue()) {
-        formatHandler();
+      if (autoFormat && isFunction(formatter)) {
+        if (mode === 'diff') {
+          const editor = editorRef.current as ModeMap['diff']['editor'];
+          const originalModel = editor?.getModel()?.original;
+          const modifiedModel = editor?.getModel()?.modified;
+          if (originalModel?.getValue() || modifiedModel?.getValue()) {
+            formatHandler();
+          }
+        } else {
+          const editor = editorRef.current as ModeMap['normal']['editor'];
+          if (editor?.getValue()) {
+            formatHandler();
+          }
+        }
       }
     },
-    [autoFocus, autoFormat, onDidMount, formatHandler, formatter],
+    [onDidMount, autoFocus, autoFormat, formatter, mode, formatHandler],
   );
   const onResizeHandler = useCallback(
     () => raf(() => editorRef.current?.layout()),
@@ -231,14 +364,34 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
   }, [onResizeHandler]);
   useImperativeHandle(
     ref,
-    () => ({
-      getEditor: () => editorRef.current,
-      getMonaco: () => monacoRef.current,
-      format: formatHandler,
-      setValue: setValueHandler,
-    }),
-    [formatHandler, setValueHandler],
+    () =>
+      ({
+        getEditor: () => editorRef.current,
+        getMonaco: () => monacoRef.current,
+        format: formatHandler,
+        setValue: setValueHandler,
+        setOriginal: setOriginalHandler,
+      } as EditorInstance<'diff'>),
+    [formatHandler, setOriginalHandler, setValueHandler],
   );
+  if (mode === 'diff') {
+    return (
+      <ReactMonacoDiffEditor
+        language={language}
+        theme={theme}
+        options={optionsMemo}
+        defaultValue={defaultValue}
+        value={value}
+        original={original}
+        onChange={onChangeHandler}
+        editorWillMount={editorWillMountHandler}
+        editorDidMount={editorDidMountHandler}
+        editorWillUnmount={
+          onWillUnmount as ModeMap['diff']['props']['onWillUnmount']
+        }
+      />
+    );
+  }
   return (
     <ReactMonacoEditor
       language={language}
@@ -249,9 +402,15 @@ const Component = forwardRef<EditorInstance, EditorProps>((props, ref) => {
       onChange={onChangeHandler}
       editorWillMount={editorWillMountHandler}
       editorDidMount={editorDidMountHandler}
-      editorWillUnmount={onWillUnmount}
+      editorWillUnmount={
+        onWillUnmount as ModeMap['normal']['props']['onWillUnmount']
+      }
     />
   );
-});
+}
+
+const Component = forwardRef(
+  InternalComponent,
+) as InternalEditorType as EditorInterface;
 
 export default Component;

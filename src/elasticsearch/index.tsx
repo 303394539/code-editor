@@ -1,11 +1,18 @@
 import { isString } from 'lodash';
 
+import type { ReactElement, Ref } from 'react';
 import { forwardRef, useCallback, useEffect, useRef } from 'react';
 
 import type { IDisposable } from 'monaco-editor';
-import type { editor } from 'monaco-editor/esm/vs/editor/editor.api';
 
-import type { EditorInstance, EditorProps } from '../editor';
+import type {
+  EditorInstance,
+  EditorProps,
+  EditorStaticInterface,
+  Mode,
+  ModeMap,
+  MonacoType,
+} from '../editor';
 import Editor from '../editor';
 import type {
   Decoration,
@@ -20,10 +27,19 @@ import {
   getActionMarksDecorations,
 } from './monaco';
 
-export type ElasticSearchEditorProps = Omit<
-  EditorProps,
+export type ElasticSearchEditorProps<T extends Mode = 'normal'> = Omit<
+  EditorProps<T>,
   'language' | 'defaultKeywords'
 >;
+
+export type InternalElasticSearchEditorType = <T extends Mode = 'normal'>(
+  props: ElasticSearchEditorProps<T> & {
+    ref?: Ref<EditorInstance<T>>;
+  },
+) => ReactElement;
+
+export type ElasticSearchEditorInterface = InternalElasticSearchEditorType &
+  EditorStaticInterface;
 
 let disposableList: IDisposable[] = [];
 
@@ -34,58 +50,60 @@ const clearDisposableList = () => {
   disposableList = [];
 };
 
-const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
-  ({ value, ...props }, ref) => {
-    const editorRef = useRef<editor.IStandaloneCodeEditor>();
+function InternalComponent<T extends Mode = 'normal'>(
+  { mode = 'normal', ...props }: ElasticSearchEditorProps<T>,
+  ref?: Ref<EditorInstance<T>>,
+) {
+  const editorRef = useRef<ModeMap[T]['editor']>();
 
-    const searchTokensRef = useRef<SearchAction[]>([]);
-    const executeDecorationsRef = useRef<(Decoration | string)[]>([]);
-    const currentActionRef = useRef<SearchAction>();
+  const searchTokensRef = useRef<SearchAction[]>([]);
+  const executeDecorationsRef = useRef<(Decoration | string)[]>([]);
+  const currentActionRef = useRef<SearchAction>();
 
-    const refreshActionMarksHandler = useCallback((editor?: MonacoEditor) => {
-      const freshDecorations = getActionMarksDecorations(
-        searchTokensRef.current,
-      );
-      // @See https://github.com/Microsoft/monaco-editor/issues/913#issuecomment-396537569
-      executeDecorationsRef.current = editor?.deltaDecorations(
-        executeDecorationsRef.current as Array<string>,
-        freshDecorations,
-      ) as unknown as Decoration[];
-    }, []);
+  const refreshActionMarksHandler = useCallback((editor?: MonacoEditor) => {
+    const freshDecorations = getActionMarksDecorations(searchTokensRef.current);
+    // @See https://github.com/Microsoft/monaco-editor/issues/913#issuecomment-396537569
+    executeDecorationsRef.current = editor?.deltaDecorations(
+      executeDecorationsRef.current as Array<string>,
+      freshDecorations,
+    ) as unknown as Decoration[];
+  }, []);
 
-    const cleanHandler = useCallback((v?: string) => {
-      return (
-        v
-          /**
-           * 修复method之后的换行
-           */
-          ?.replace(/\s+(\n|\r)+\s+\//gu, (e) =>
-            e.replace(/[\s\n\r]+/u, `${decodeURIComponent('%20')}`),
-          )
-          /**
-           * 修复结尾{为换行
-           */
-          ?.replace(/([a-zA-Z0-9/]{1})(\s+)?\{/gu, (e) =>
-            e.replace(/(\s+)?\{/u, `${decodeURIComponent('%0A')}{`),
-          )
-          /**
-           * 修复}接method后为换行
-           */
-          .replace(/\}{1}(GET|DELETE|POST|PUT)/giu, (e) =>
-            e.replace(
-              /\}/,
-              `}${decodeURIComponent('%0A')}${decodeURIComponent('%0A')}`,
-            ),
-          ) || ''
-      );
-    }, []);
+  const cleanHandler = useCallback((v?: string) => {
+    return (
+      v
+        /**
+         * 修复method之后的换行
+         */
+        ?.replace(/\s+(\n|\r)+\s+\//gu, (e) =>
+          e.replace(/[\s\n\r]+/u, `${decodeURIComponent('%20')}`),
+        )
+        /**
+         * 修复结尾{为换行
+         */
+        ?.replace(/([a-zA-Z0-9/]{1})(\s+)?\{/gu, (e) =>
+          e.replace(/(\s+)?\{/u, `${decodeURIComponent('%0A')}{`),
+        )
+        /**
+         * 修复}接method后为换行
+         */
+        .replace(/\}{1}(GET|DELETE|POST|PUT)/giu, (e) =>
+          e.replace(
+            /\}/,
+            `}${decodeURIComponent('%0A')}${decodeURIComponent('%0A')}`,
+          ),
+        ) || ''
+    );
+  }, []);
 
-    const formatterHandler = useCallback(
-      (value?: string) => {
-        if (isString(value) && value.length) {
-          try {
-            if (editorRef.current) {
-              const editor = editorRef.current;
+  const formatterHandler = useCallback(
+    (value?: string) => {
+      if (isString(value) && value.length) {
+        try {
+          if (editorRef.current) {
+            if (mode === 'normal') {
+            } else {
+              const editor = editorRef.current as ModeMap['normal']['editor'];
               const model = editor.getModel();
               if (model) {
                 model.setValue(cleanHandler(value));
@@ -129,79 +147,86 @@ const Component = forwardRef<EditorInstance, ElasticSearchEditorProps>(
                 return model.getValue();
               }
             }
-          } catch (error) {
-            console.error(error);
           }
+        } catch (error) {
+          console.error(error);
         }
-        return value || '';
-      },
-      [cleanHandler, refreshActionMarksHandler],
-    );
+      }
+      return value || '';
+    },
+    [cleanHandler, mode, refreshActionMarksHandler],
+  );
 
-    const onDidMountHandler = useCallback<Required<EditorProps>['onDidMount']>(
-      (editor, monaco) => {
-        editorRef.current = editor;
+  const onDidMountHandler = useCallback(
+    (e: ModeMap[T]['editor'], monaco: MonacoType) => {
+      editorRef.current = e;
 
-        disposableList.push(
-          monaco.languages.registerCodeLensProvider('search', {
-            onDidChange: (listener, thisArg) => {
-              const model = editor.getModel();
-              // refresh at first loading
-              if (model) {
+      disposableList.push(
+        monaco.languages.registerCodeLensProvider('search', {
+          onDidChange: (listener, thisArg) => {
+            if (mode === 'diff') {
+            }
+            const editor = e as ModeMap['normal']['editor'];
+            const model = editor.getModel();
+            // refresh at first loading
+            if (model) {
+              searchTokensRef.current = buildSearchToken(model);
+              refreshActionMarksHandler(editor);
+            }
+            return editor.onDidChangeCursorPosition((acc) => {
+              // only updates the searchTokens when content edited, past, redo, undo
+              if ([0, 4, 6, 5].includes(acc.reason)) {
+                if (!model) {
+                  return;
+                }
+
                 searchTokensRef.current = buildSearchToken(model);
+
                 refreshActionMarksHandler(editor);
               }
-              return editor.onDidChangeCursorPosition((acc) => {
-                // only updates the searchTokens when content edited, past, redo, undo
-                if ([0, 4, 6, 5].includes(acc.reason)) {
-                  if (!model) {
-                    return;
-                  }
 
-                  searchTokensRef.current = buildSearchToken(model);
+              const newAction = getAction(acc.position);
+              if (newAction && newAction !== currentActionRef.current) {
+                currentActionRef.current = newAction;
+                return listener(thisArg);
+              }
+            });
+          },
+          provideCodeLenses: () => {
+            // const position = editor.getPosition();
+            // const lenses = position
+            //   ? buildCodeLens(position, autoIndentCmdId!, copyCurlCmdId!)
+            //   : [];
 
-                  refreshActionMarksHandler(editor);
-                }
+            return {
+              lenses: [],
+              dispose: () => {},
+            };
+          },
+        }),
+      );
+    },
+    [mode, refreshActionMarksHandler],
+  );
+  useEffect(() => {
+    return () => {
+      clearDisposableList();
+    };
+  }, []);
+  return (
+    <Editor
+      formatter={formatterHandler}
+      {...(props as ElasticSearchEditorProps)}
+      mode={mode}
+      ref={ref}
+      language="search"
+      onDidMount={onDidMountHandler}
+    />
+  );
+}
 
-                const newAction = getAction(acc.position);
-                if (newAction && newAction !== currentActionRef.current) {
-                  currentActionRef.current = newAction;
-                  return listener(thisArg);
-                }
-              });
-            },
-            provideCodeLenses: () => {
-              // const position = editor.getPosition();
-              // const lenses = position
-              //   ? buildCodeLens(position, autoIndentCmdId!, copyCurlCmdId!)
-              //   : [];
-
-              return {
-                lenses: [],
-                dispose: () => {},
-              };
-            },
-          }),
-        );
-      },
-      [refreshActionMarksHandler],
-    );
-    useEffect(() => {
-      return () => {
-        clearDisposableList();
-      };
-    }, []);
-    return (
-      <Editor
-        formatter={formatterHandler}
-        {...props}
-        ref={ref}
-        value={value}
-        language="search"
-        onDidMount={onDidMountHandler}
-      />
-    );
-  },
-);
+const Component = forwardRef(
+  InternalComponent,
+) as InternalElasticSearchEditorType as ElasticSearchEditorInterface;
 
 export default Component;
