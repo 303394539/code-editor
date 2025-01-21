@@ -33,6 +33,7 @@ export type ModeMap = {
     instance: {
       getEditor: () => editor.IStandaloneCodeEditor | void;
       setValue: (value: string) => void;
+      getValue: () => string;
       format: () => void;
     };
     props: {
@@ -53,7 +54,9 @@ export type ModeMap = {
     instance: {
       getEditor: () => editor.IStandaloneDiffEditor | void;
       setValue: (value: string) => void;
+      getValue: () => string;
       setOriginal: (value: string) => void;
+      getOriginal: () => string;
       format: (scope?: ('original' | 'value')[]) => void;
     };
     props: {
@@ -368,17 +371,46 @@ function InternalComponent<T extends Mode = 'normal'>(
     onResizeHandler();
     return () => window.removeEventListener('resize', onResizeHandler);
   }, [onResizeHandler]);
+  const getEditorHandler = useCallback(() => editorRef.current, []);
+  const getMonacoHandler = useCallback(() => monacoRef.current, []);
+  const getValueHandler = useCallback(() => {
+    if (mode === 'diff') {
+      const editor = editorRef.current as ModeMap['diff']['editor'];
+      const modifiedModel = editor?.getModel()?.modified;
+      return modifiedModel?.getValue();
+    }
+    const editor = editorRef.current as ModeMap['normal']['editor'];
+    return editor.getValue();
+  }, [mode]);
+  const getOriginalHandler = useCallback(() => {
+    if (mode === 'diff') {
+      const editor = editorRef.current as ModeMap['diff']['editor'];
+      const originalModel = editor?.getModel()?.original;
+      return originalModel?.getValue();
+    }
+    return null;
+  }, [mode]);
   useImperativeHandle(
     ref,
     () =>
       ({
-        getEditor: () => editorRef.current,
-        getMonaco: () => monacoRef.current,
+        getEditor: getEditorHandler,
+        getMonaco: getMonacoHandler,
         format: formatHandler,
         setValue: setValueHandler,
+        getValue: getValueHandler,
         setOriginal: setOriginalHandler,
-      } as EditorInstance<'diff'>),
-    [formatHandler, setOriginalHandler, setValueHandler],
+        getOriginal: getOriginalHandler,
+      } as EditorInstance<T>),
+    [
+      formatHandler,
+      getEditorHandler,
+      getMonacoHandler,
+      getOriginalHandler,
+      getValueHandler,
+      setOriginalHandler,
+      setValueHandler,
+    ],
   );
   if (mode === 'diff') {
     return (

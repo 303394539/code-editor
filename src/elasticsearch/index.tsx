@@ -51,7 +51,7 @@ const clearDisposableList = () => {
 };
 
 function InternalComponent<T extends Mode = 'normal'>(
-  { mode = 'normal', ...props }: ElasticSearchEditorProps<T>,
+  { mode, ...props }: ElasticSearchEditorProps<T>,
   ref?: Ref<EditorInstance<T>>,
 ) {
   const editorRef = useRef<ModeMap[T]['editor']>();
@@ -217,7 +217,7 @@ function InternalComponent<T extends Mode = 'normal'>(
     <Editor
       formatter={formatterHandler}
       {...(props as ElasticSearchEditorProps)}
-      mode={mode}
+      mode={mode as T}
       ref={ref}
       language="search"
       onDidMount={onDidMountHandler}
