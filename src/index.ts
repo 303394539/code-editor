@@ -1,3 +1,4 @@
+export { default as CodeEditorWebpackPlugin } from './code-editor-webpack-plugin';
 export type { CSSEditorProps } from './css';
 export { default as CSSEditor } from './css';
 export type { EditorInstance, EditorProps } from './editor';

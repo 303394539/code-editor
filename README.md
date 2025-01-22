@@ -12,11 +12,11 @@ pnpm add @baic/code-editor
 
 ```js
 // 以 umi 为例
-import CodeEditorWebpackPlugin from '@baic/code-editor/lib/code-editor-webpack-plugin';
+import { CodeEditorWebpackPlugin } from '@baic/code-editor';
 export default {
   chainWebpack: (memo) => {
     memo
-      .plugin('monaco-editor-webpack-plugin')
+      .plugin('code-editor-webpack-plugin')
       .use(new CodeEditorWebpackPlugin());
   },
 };
