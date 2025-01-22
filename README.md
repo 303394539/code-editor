@@ -17,12 +17,27 @@ export default {
   chainWebpack: (memo) => {
     memo
       .plugin('monaco-editor-webpack-plugin')
-      .use(new CodeEditorWebpackPlugin(), [['sql']]); // 其他语言增加其他的
+      .use(new CodeEditorWebpackPlugin());
   },
 };
 ```
 
-### SQL 编辑器
+### 基本使用
+
+```tsx
+import { JSONEditor } from '@baic/code-editor';
+export default () => (
+  <div
+    style={{
+      height: 500,
+    }}
+  >
+    <JSONEditor />
+  </div>
+);
+```
+
+### 新增提示词
 
 ```tsx
 import { Kind, SQLEditor } from '@baic/code-editor';
@@ -81,7 +96,7 @@ export default () => (
 );
 ```
 
-### JSON 编辑器
+### Diff 使用
 
 ```tsx
 import { JSONEditor } from '@baic/code-editor';
@@ -91,7 +106,7 @@ export default () => (
       height: 500,
     }}
   >
-    <JSONEditor />
+    <JSONEditor mode="diff" value="{}" original="{}" />
   </div>
 );
 ```
