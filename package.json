@@ -35,7 +35,7 @@
     "monaco-editor-nginx": "2.0.x",
     "monaco-editor-webpack-plugin": "7.1.x",
     "raf": "3.x",
-    "react-monaco-editor": "0.56.x",
+    "react-monaco-editor": "0.58.x",
     "sql-formatter": "15.4.x"
   },
   "devDependencies": {
@@ -47,7 +47,7 @@
     "father": "4.5.x",
     "prettier": "2.x",
     "react": "18.x",
-    "vitest": "2.1.x"
+    "vitest": "3.0.x"
   },
   "packageManager": "pnpm@8.15.9",
   "engines": {
