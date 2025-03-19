@@ -28,7 +28,7 @@
     "@nginx/reference-lib": "1.1.x",
     "@types/lodash": "4.x",
     "@types/raf": "3.x",
-    "dt-sql-parser": "4.x",
+    "dt-sql-parser": "4.0.x",
     "json5": "2.2.x",
     "lodash": "4.x",
     "monaco-editor": "0.52.x",

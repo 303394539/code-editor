@@ -15,8 +15,8 @@ dependencies:
     specifier: 3.x
     version: 3.4.3
   dt-sql-parser:
-    specifier: 4.x
-    version: 4.1.1(antlr4ng-cli@1.0.7)
+    specifier: 4.0.x
+    version: 4.0.2(antlr4ng-cli@1.0.7)
   json5:
     specifier: 2.2.x
     version: 2.2.3
@@ -3423,9 +3423,8 @@ packages:
       domhandler: 4.3.1
     dev: true
 
-  /dt-sql-parser@4.1.1(antlr4ng-cli@1.0.7):
-    resolution: {integrity: sha512-9f4m+CxIzhIrFqW8g95bCRQd+B+WeiC+RgDinBL5hwxa9OXrC6iIbaUtmiMDLO3GDBONn9ybgc+kQzv+G7EKcg==}
-    engines: {node: '>=18'}
+  /dt-sql-parser@4.0.2(antlr4ng-cli@1.0.7):
+    resolution: {integrity: sha512-8D/kfYLW+wgz7Cwf5K+OCtex7QHiCyIuI18pw0a5vjSXRKCpfQqNQeG7tU5vp4D0RQEZJiMBuKJPBYwoqWxoAA==}
     dependencies:
       antlr4-c3: 3.3.7(antlr4ng-cli@1.0.7)
       antlr4ng: 2.0.11(antlr4ng-cli@1.0.7)
