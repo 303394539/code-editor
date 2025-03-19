@@ -74,6 +74,7 @@ export type MonacoType = typeof MonacoEditor;
 
 export type EditorInstance<T extends Mode = 'normal'> = {
   getMonaco: () => MonacoType | void;
+  layout: editor.IEditor['layout'];
 } & ModeMap[T]['instance'];
 
 export type HintDataItem = {
@@ -164,6 +165,8 @@ function InternalComponent<T extends Mode = 'normal'>(
     return {
       contextmenu: false,
       domReadOnly: true,
+      automaticLayout: true,
+      smoothScrolling: true,
       ...monacoEditorOptions,
       readOnly,
       readOnlyMessage: {
@@ -176,8 +179,6 @@ function InternalComponent<T extends Mode = 'normal'>(
   }, [monacoEditorOptions, readOnly]);
   const editorRef = useRef<ModeMap[T]['editor']>();
   const monacoRef = useRef<MonacoType>();
-
-  const resizeObserverRef = useRef<ResizeObserver>();
 
   const formatHandler = useCallback<ModeMap['diff']['instance']['format']>(
     (scope) => {
@@ -325,15 +326,6 @@ function InternalComponent<T extends Mode = 'normal'>(
     },
     [onWillMount, hintData, onHintData, onHintDataHandler],
   );
-  const listenerResizeHandler = useCallback(() => {
-    if (editorRef.current) {
-      const resizeObserver = new ResizeObserver(() =>
-        raf(() => editorRef.current?.layout()),
-      );
-      resizeObserver.observe(editorRef.current.getContainerDomNode());
-      resizeObserverRef.current = resizeObserver;
-    }
-  }, []);
   const editorDidMountHandler = useCallback(
     (editor: ModeMap[T]['editor'], monaco: MonacoType) => {
       if (isFunction(onDidMount)) {
@@ -343,7 +335,6 @@ function InternalComponent<T extends Mode = 'normal'>(
         );
       }
       editorRef.current = editor;
-      listenerResizeHandler();
       if (autoFocus) {
         editor.focus();
       }
@@ -363,15 +354,7 @@ function InternalComponent<T extends Mode = 'normal'>(
         }
       }
     },
-    [
-      onDidMount,
-      listenerResizeHandler,
-      autoFocus,
-      autoFormat,
-      formatter,
-      mode,
-      formatHandler,
-    ],
+    [onDidMount, autoFocus, autoFormat, formatter, mode, formatHandler],
   );
   useEffect(() => {
     if (monacoRef.current) {
@@ -381,9 +364,6 @@ function InternalComponent<T extends Mode = 'normal'>(
         onHintDataHandler(monacoRef.current, hintData);
       }
     }
-    return () => {
-      resizeObserverRef.current?.disconnect();
-    };
   }, [hintData, onHintData, onHintDataHandler]);
   const getEditorHandler = useCallback(() => editorRef.current, []);
   const getMonacoHandler = useCallback(() => monacoRef.current, []);
@@ -404,6 +384,9 @@ function InternalComponent<T extends Mode = 'normal'>(
     }
     return null;
   }, [mode]);
+  const layoutHandler = useCallback<editor.IEditor['layout']>((...args) => {
+    editorRef.current?.layout(...args);
+  }, []);
   useImperativeHandle(
     ref,
     () =>
@@ -415,6 +398,7 @@ function InternalComponent<T extends Mode = 'normal'>(
         getValue: getValueHandler,
         setOriginal: setOriginalHandler,
         getOriginal: getOriginalHandler,
+        layout: layoutHandler,
       } as EditorInstance<T>),
     [
       formatHandler,
@@ -424,6 +408,7 @@ function InternalComponent<T extends Mode = 'normal'>(
       getValueHandler,
       setOriginalHandler,
       setValueHandler,
+      layoutHandler,
     ],
   );
   if (mode === 'diff') {
