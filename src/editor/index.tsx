@@ -177,6 +177,8 @@ function InternalComponent<T extends Mode = 'normal'>(
   const editorRef = useRef<ModeMap[T]['editor']>();
   const monacoRef = useRef<MonacoType>();
 
+  const resizeObserverRef = useRef<ResizeObserver>();
+
   const formatHandler = useCallback<ModeMap['diff']['instance']['format']>(
     (scope) => {
       if (mode === 'diff') {
@@ -323,6 +325,15 @@ function InternalComponent<T extends Mode = 'normal'>(
     },
     [onWillMount, hintData, onHintData, onHintDataHandler],
   );
+  const listenerResizeHandler = useCallback(() => {
+    if (editorRef.current) {
+      const resizeObserver = new ResizeObserver(() =>
+        raf(() => editorRef.current?.layout()),
+      );
+      resizeObserver.observe(editorRef.current.getContainerDomNode());
+      resizeObserverRef.current = resizeObserver;
+    }
+  }, []);
   const editorDidMountHandler = useCallback(
     (editor: ModeMap[T]['editor'], monaco: MonacoType) => {
       if (isFunction(onDidMount)) {
@@ -332,6 +343,7 @@ function InternalComponent<T extends Mode = 'normal'>(
         );
       }
       editorRef.current = editor;
+      listenerResizeHandler();
       if (autoFocus) {
         editor.focus();
       }
@@ -351,11 +363,15 @@ function InternalComponent<T extends Mode = 'normal'>(
         }
       }
     },
-    [onDidMount, autoFocus, autoFormat, formatter, mode, formatHandler],
-  );
-  const onResizeHandler = useCallback(
-    () => raf(() => editorRef.current?.layout()),
-    [],
+    [
+      onDidMount,
+      listenerResizeHandler,
+      autoFocus,
+      autoFormat,
+      formatter,
+      mode,
+      formatHandler,
+    ],
   );
   useEffect(() => {
     if (monacoRef.current) {
@@ -365,12 +381,10 @@ function InternalComponent<T extends Mode = 'normal'>(
         onHintDataHandler(monacoRef.current, hintData);
       }
     }
+    return () => {
+      resizeObserverRef.current?.disconnect();
+    };
   }, [hintData, onHintData, onHintDataHandler]);
-  useEffect(() => {
-    window.addEventListener('resize', onResizeHandler);
-    onResizeHandler();
-    return () => window.removeEventListener('resize', onResizeHandler);
-  }, [onResizeHandler]);
   const getEditorHandler = useCallback(() => editorRef.current, []);
   const getMonacoHandler = useCallback(() => monacoRef.current, []);
   const getValueHandler = useCallback(() => {
