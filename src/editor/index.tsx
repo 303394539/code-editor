@@ -5,6 +5,7 @@ import type { ReactElement, Ref } from 'react';
 import {
   forwardRef,
   useCallback,
+  useContext,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -24,6 +25,8 @@ import MonacoEditor from 'monaco-editor';
 import type { EditorLanguage } from 'monaco-editor/esm/metadata';
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api';
 import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
+
+import { context } from '../provider';
 
 export type ModeMap = {
   normal: {
@@ -141,13 +144,20 @@ function InternalComponent<T extends Mode = 'normal'>(
   ref?: Ref<EditorInstance<T>>,
 ) {
   const {
+    monacoEditorOptions: providerMonacoEditorOptions,
+    theme: providerTheme,
+    onWillMount: providerOnWillMount,
+    onDidMount: providerOnDidMount,
+    onWillUnmount: providerOnWillUnmount,
+  } = useContext(context);
+  const {
     mode = 'normal',
     defaultValue,
     value,
     hintData,
     onChange,
     monacoEditorOptions,
-    theme = 'vs',
+    theme = providerTheme || 'vs',
     autoFormat,
     autoFocus,
     language,
@@ -167,16 +177,18 @@ function InternalComponent<T extends Mode = 'normal'>(
       domReadOnly: true,
       automaticLayout: true,
       smoothScrolling: true,
+      ...providerMonacoEditorOptions,
       ...monacoEditorOptions,
       readOnly,
       readOnlyMessage: {
         value: '不可编辑',
         supportThemeIcons: true,
         supportHtml: true,
+        ...providerMonacoEditorOptions?.readOnlyMessage,
         ...monacoEditorOptions?.readOnlyMessage,
       },
     };
-  }, [monacoEditorOptions, readOnly]);
+  }, [providerMonacoEditorOptions, monacoEditorOptions, readOnly]);
   const editorRef = useRef<ModeMap[T]['editor']>();
   const monacoRef = useRef<MonacoType>();
 
@@ -314,6 +326,9 @@ function InternalComponent<T extends Mode = 'normal'>(
   );
   const editorWillMountHandler = useCallback(
     (monaco: MonacoType) => {
+      if (isFunction(providerOnWillMount)) {
+        providerOnWillMount(monaco);
+      }
       if (isFunction(onWillMount)) {
         onWillMount(monaco);
       }
@@ -324,10 +339,16 @@ function InternalComponent<T extends Mode = 'normal'>(
         onHintDataHandler(monaco, hintData);
       }
     },
-    [onWillMount, hintData, onHintData, onHintDataHandler],
+    [providerOnWillMount, onWillMount, hintData, onHintData, onHintDataHandler],
   );
   const editorDidMountHandler = useCallback(
     (editor: ModeMap[T]['editor'], monaco: MonacoType) => {
+      if (isFunction(providerOnDidMount)) {
+        providerOnDidMount(
+          editor as ModeMap['normal']['editor'] & ModeMap['diff']['editor'],
+          monaco,
+        );
+      }
       if (isFunction(onDidMount)) {
         onDidMount(
           editor as ModeMap['normal']['editor'] & ModeMap['diff']['editor'],
@@ -354,7 +375,15 @@ function InternalComponent<T extends Mode = 'normal'>(
         }
       }
     },
-    [onDidMount, autoFocus, autoFormat, formatter, mode, formatHandler],
+    [
+      providerOnDidMount,
+      onDidMount,
+      autoFocus,
+      autoFormat,
+      formatter,
+      mode,
+      formatHandler,
+    ],
   );
   useEffect(() => {
     if (monacoRef.current) {
@@ -424,7 +453,8 @@ function InternalComponent<T extends Mode = 'normal'>(
         editorWillMount={editorWillMountHandler}
         editorDidMount={editorDidMountHandler}
         editorWillUnmount={
-          onWillUnmount as ModeMap['diff']['props']['onWillUnmount']
+          (onWillUnmount ||
+            providerOnWillUnmount) as ModeMap['diff']['props']['onWillUnmount']
         }
       />
     );
@@ -440,7 +470,8 @@ function InternalComponent<T extends Mode = 'normal'>(
       editorWillMount={editorWillMountHandler}
       editorDidMount={editorDidMountHandler}
       editorWillUnmount={
-        onWillUnmount as ModeMap['normal']['props']['onWillUnmount']
+        (onWillUnmount ||
+          providerOnWillUnmount) as ModeMap['normal']['props']['onWillUnmount']
       }
     />
   );
