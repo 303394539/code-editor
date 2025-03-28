@@ -10,7 +10,7 @@ pnpm add @baic/code-editor
 
 ### 需要 webpack 插件配合
 
-```js
+``` ts
 // 以 umi 为例
 import { CodeEditorWebpackPlugin } from '@baic/code-editor';
 export default {
@@ -20,6 +20,23 @@ export default {
       .use(new CodeEditorWebpackPlugin());
   },
 };
+```
+
+### 配置上下文
+
+``` tsx
+// 以 umi 为例
+import type { ReactNode } from 'react';
+/**
+ * 因为编辑器比较重，上下文的引用最好直接引用原地址，index的export引用会造成内存过大
+ */
+import Provider as CodeEditorProvider from '@baic/code-editor/es/provider';
+
+export const rootContainer = (container: ReactNode) => {
+  return <CodeEditorProvider monacoEditorOptions={{}}>
+    {container}
+  <CodeEditorProvider>
+}
 ```
 
 ### 基本使用

@@ -18,8 +18,6 @@ export type { LESSEditorProps } from './less';
 export { default as LESSEditor } from './less';
 export type { NginxEditorProps } from './nginx';
 export { default as NginxEditor } from './nginx';
-export type { ProviderProps, ProviderValue } from './provider';
-export { default as Provider } from './provider';
 export type { PythonEditorProps } from './python';
 export { default as PythonEditor } from './python';
 export type { RedisEditorProps } from './redis';
