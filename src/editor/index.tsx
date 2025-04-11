@@ -1,4 +1,4 @@
-import { isEqual, isFunction, uniqWith } from 'lodash';
+import { isEqual, isFunction, isString, uniqWith } from 'lodash';
 import raf from 'raf';
 
 import type { ReactElement, Ref } from 'react';
@@ -93,6 +93,11 @@ type AutoOption = {
   autoFormat?: boolean;
   autoFocus?: boolean;
 };
+type FontFaceOptions = {
+  family: string;
+  source: string | BufferSource;
+  descriptors?: FontFaceDescriptors;
+};
 
 export type EditorProps<T extends Mode = 'normal'> = AutoOption & {
   mode?: T;
@@ -107,6 +112,7 @@ export type EditorProps<T extends Mode = 'normal'> = AutoOption & {
   onHintData?: (monaco: MonacoType, hintData?: any) => void;
   readOnly?: boolean;
   defaultKeywords?: string[];
+  fontFaces?: FontFaceOptions[];
 } & ModeMap[T]['props'];
 
 export type EditorStaticInterface = {
@@ -149,6 +155,7 @@ function InternalComponent<T extends Mode = 'normal'>(
     onWillMount: providerOnWillMount,
     onDidMount: providerOnDidMount,
     onWillUnmount: providerOnWillUnmount,
+    fontFaces: providerFontFaces,
   } = useContext(context);
   const {
     mode = 'normal',
@@ -169,6 +176,7 @@ function InternalComponent<T extends Mode = 'normal'>(
     onWillMount,
     onDidMount,
     onWillUnmount,
+    fontFaces = providerFontFaces,
   } = props;
   const { original } = props as EditorProps<'diff'>;
   const optionsMemo = useMemo<ModeMap[T]['options']>(() => {
@@ -324,6 +332,76 @@ function InternalComponent<T extends Mode = 'normal'>(
     },
     [defaultKeywords, language],
   );
+
+  /**
+   * @description 补充字体加载后重绘
+   */
+  const loadFontfamilyHandler = useCallback(() => {
+    const monacoEditor = monacoRef.current?.editor;
+    if (!monacoEditor) {
+      return;
+    }
+    const loadedFamilySet: Set<string> = new Set<string>();
+    const refreshLoadedFamilySet = () => {
+      if (!!document.fonts) {
+        document.fonts.forEach((font) => {
+          if (!loadedFamilySet.has(font.family)) {
+            loadedFamilySet.add(font.family);
+          }
+        });
+      }
+    };
+    if (fontFaces?.length) {
+      refreshLoadedFamilySet();
+      Promise.all(
+        fontFaces
+          .filter((fontFace) => !loadedFamilySet.has(fontFace.family))
+          .map(
+            ({ family, source, descriptors }) =>
+              new Promise<void>((resolve) => {
+                const fontFace = new FontFace(
+                  family,
+                  isString(source) && !/^url\((.*)\)$/.test(source)
+                    ? `url(${source})`
+                    : source,
+                  descriptors,
+                );
+                fontFace
+                  .load()
+                  .then((ff) => {
+                    document.fonts.add(ff);
+                    resolve();
+                  })
+                  .catch(resolve);
+              }),
+          ),
+      )
+        .then(monacoEditor.remeasureFonts)
+        .catch(monacoEditor.remeasureFonts);
+    } else if (
+      optionsMemo.fontFamily &&
+      !loadedFamilySet.has(optionsMemo.fontFamily)
+    ) {
+      /**
+       * @description 尽量避免@font-face加载大字体的延迟
+       */
+      refreshLoadedFamilySet();
+      setTimeout(() => {
+        refreshLoadedFamilySet();
+        if (
+          optionsMemo.fontFamily &&
+          !loadedFamilySet.has(optionsMemo.fontFamily)
+        ) {
+          console.error(
+            `@baic/code-editor 提示 fontFamily：${optionsMemo.fontFamily} 加载异常`,
+          );
+        }
+        monacoEditor.remeasureFonts();
+      }, 200);
+    } else {
+      monacoEditor.remeasureFonts();
+    }
+  }, [fontFaces, optionsMemo]);
   const editorWillMountHandler = useCallback(
     (monaco: MonacoType) => {
       if (isFunction(providerOnWillMount)) {
@@ -374,6 +452,8 @@ function InternalComponent<T extends Mode = 'normal'>(
           }
         }
       }
+
+      loadFontfamilyHandler();
     },
     [
       providerOnDidMount,
@@ -383,8 +463,10 @@ function InternalComponent<T extends Mode = 'normal'>(
       formatter,
       mode,
       formatHandler,
+      loadFontfamilyHandler,
     ],
   );
+
   useEffect(() => {
     if (monacoRef.current) {
       if (isFunction(onHintData)) {

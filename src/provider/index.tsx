@@ -10,6 +10,7 @@ export type ProviderValue = Pick<
   | 'onWillMount'
   | 'onDidMount'
   | 'onWillUnmount'
+  | 'fontFaces'
 >;
 
 export type ProviderProps = PropsWithChildren<ProviderValue>;
