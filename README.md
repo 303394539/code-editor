@@ -10,7 +10,7 @@ pnpm add @baic/code-editor
 
 ### 需要 webpack 插件配合
 
-``` ts
+```ts
 // 以 umi 为例
 import { CodeEditorWebpackPlugin } from '@baic/code-editor';
 export default {
@@ -24,7 +24,7 @@ export default {
 
 ### 配置上下文
 
-``` tsx
+```tsx
 // 以 umi 为例
 import type { ReactNode } from 'react';
 /**

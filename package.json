@@ -1,6 +1,6 @@
 {
   "name": "@baic/code-editor",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "各种代码编辑器",
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
     "update": "git clean -xfd && rm -rf ./pnpm-lock.yaml && pnpm i"
   },
   "dependencies": {
+    "@babel/runtime": "7.x",
     "@nginx/reference-lib": "1.1.x",
     "@types/lodash": "4.x",
     "@types/raf": "3.x",
@@ -39,10 +40,9 @@
     "sql-formatter": "15.4.x"
   },
   "devDependencies": {
-    "@babel/plugin-transform-runtime": "7.x",
-    "@baic/eslint-config-yolk": "~2.1.0-alpha.245",
-    "@baic/father-plugin-yolk": "~2.1.0-alpha.245",
-    "@baic/prettier-config-yolk": "~2.1.0-alpha.245",
+    "@baic/eslint-config-yolk": "~2.1.0-alpha.246",
+    "@baic/father-plugin-yolk": "~2.1.0-alpha.246",
+    "@baic/prettier-config-yolk": "~2.1.0-alpha.246",
     "@types/prettier": "2.x",
     "@types/react": "18.x",
     "father": "4.5.x",
