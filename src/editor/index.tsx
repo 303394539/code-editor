@@ -197,8 +197,8 @@ function InternalComponent<T extends Mode = 'normal'>(
       },
     };
   }, [providerMonacoEditorOptions, monacoEditorOptions, readOnly]);
-  const editorRef = useRef<ModeMap[T]['editor']>();
-  const monacoRef = useRef<MonacoType>();
+  const editorRef = useRef<ModeMap[T]['editor']>(null);
+  const monacoRef = useRef<MonacoType>(null);
 
   const formatHandler = useCallback<ModeMap['diff']['instance']['format']>(
     (scope) => {

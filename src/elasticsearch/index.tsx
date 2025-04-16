@@ -54,11 +54,11 @@ function InternalComponent<T extends Mode = 'normal'>(
   { mode, ...props }: ElasticSearchEditorProps<T>,
   ref?: Ref<EditorInstance<T>>,
 ) {
-  const editorRef = useRef<ModeMap[T]['editor']>();
+  const editorRef = useRef<ModeMap[T]['editor']>(null);
 
   const searchTokensRef = useRef<SearchAction[]>([]);
   const executeDecorationsRef = useRef<(Decoration | string)[]>([]);
-  const currentActionRef = useRef<SearchAction>();
+  const currentActionRef = useRef<SearchAction>(null);
 
   const refreshActionMarksHandler = useCallback((editor?: MonacoEditor) => {
     const freshDecorations = getActionMarksDecorations(searchTokensRef.current);

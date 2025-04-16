@@ -40,15 +40,19 @@
     "sql-formatter": "15.4.x"
   },
   "devDependencies": {
-    "@baic/eslint-config-yolk": "~2.1.0-alpha.246",
-    "@baic/father-plugin-yolk": "~2.1.0-alpha.246",
-    "@baic/prettier-config-yolk": "~2.1.0-alpha.246",
+    "@baic/eslint-config-yolk": "~2.1.0-alpha.247",
+    "@baic/father-plugin-yolk": "~2.1.0-alpha.247",
+    "@baic/prettier-config-yolk": "~2.1.0-alpha.247",
     "@types/prettier": "2.x",
-    "@types/react": "18.x",
+    "@types/react": "19.x",
     "father": "4.5.x",
     "prettier": "2.x",
-    "react": "18.x",
+    "react": "19.x",
     "vitest": "3.0.x"
+  },
+  "peerDependencies": {
+    "@types/react": "17.x || 18.x || 19.x",
+    "react": "17.x || 18.x || 19.x"
   },
   "packageManager": "pnpm@8.15.9",
   "engines": {
