@@ -16,13 +16,15 @@
     "es"
   ],
   "scripts": {
+    "postinstall": "husky init",
     "build": "father build",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
     "prebundle": "father prebundle",
     "prettier": "prettier --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
     "pub": "npm run prettier && npm run lint && npm run test && npm run build && npm publish",
     "test": "vitest run",
-    "update": "git clean -xfd && rm -rf ./pnpm-lock.yaml && pnpm i"
+    "update": "git clean -xfd && rm -rf ./pnpm-lock.yaml && pnpm i",
+    "prepare": "husky"
   },
   "dependencies": {
     "@babel/runtime": "7.x",
@@ -46,6 +48,8 @@
     "@types/prettier": "2.x",
     "@types/react": "19.x",
     "father": "4.5.x",
+    "husky": "9.1.x",
+    "lint-staged": "15.5.x",
     "prettier": "2.x",
     "react": "19.x",
     "vitest": "3.1.x"
@@ -58,5 +62,10 @@
   "engines": {
     "node": ">=16",
     "pnpm": ">=8"
+  },
+  "lint-staged": {
+    "*.{ts?(x),js?(x),cjs,mjs,cts,mts}": [
+      "eslint --fix"
+    ]
   }
 }
