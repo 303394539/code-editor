@@ -37,7 +37,7 @@
     "monaco-editor-webpack-plugin": "7.1.x",
     "raf": "3.x",
     "react-monaco-editor": "0.58.x",
-    "sql-formatter": "15.4.x"
+    "sql-formatter": "15.5.x"
   },
   "devDependencies": {
     "@baic/eslint-config-yolk": "~2.1.0-alpha.247",
