@@ -22,6 +22,8 @@ export type { PythonEditorProps } from './python';
 export { default as PythonEditor } from './python';
 export type { RedisEditorProps } from './redis';
 export { default as RedisEditor } from './redis';
+export type { RustEditorProps } from './rust';
+export { default as RustEditor } from './rust';
 export type { SCSSEditorProps } from './scss';
 export { default as SCSSEditor } from './scss';
 export type { ShellEditorProps } from './shell';
