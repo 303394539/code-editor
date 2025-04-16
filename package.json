@@ -48,7 +48,7 @@
     "father": "4.5.x",
     "prettier": "2.x",
     "react": "19.x",
-    "vitest": "3.0.x"
+    "vitest": "3.1.x"
   },
   "peerDependencies": {
     "@types/react": "17.x || 18.x || 19.x",
