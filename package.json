@@ -16,7 +16,6 @@
     "es"
   ],
   "scripts": {
-    "postinstall": "husky init",
     "build": "father build",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
     "prebundle": "father prebundle",
