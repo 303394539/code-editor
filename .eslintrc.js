@@ -1,4 +1,4 @@
-/** @type {import('eslint').Linter.Config} */
+/** @type {import('eslint').Linter.BaseConfig} */
 module.exports = {
   extends: '@baic/eslint-config-yolk',
   parserOptions: {
