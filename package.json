@@ -38,12 +38,12 @@
     "monaco-editor-webpack-plugin": "7.1.x",
     "raf": "3.x",
     "react-monaco-editor": "0.58.x",
-    "sql-formatter": "15.5.x"
+    "sql-formatter": "15.6.x"
   },
   "devDependencies": {
-    "@baic/eslint-config-yolk": "~2.1.0-alpha.247",
-    "@baic/father-plugin-yolk": "~2.1.0-alpha.247",
-    "@baic/prettier-config-yolk": "~2.1.0-alpha.247",
+    "@baic/eslint-config-yolk": "~2.1.0-alpha.248",
+    "@baic/father-plugin-yolk": "~2.1.0-alpha.248",
+    "@baic/prettier-config-yolk": "~2.1.0-alpha.248",
     "@types/prettier": "2.x",
     "@types/react": "19.x",
     "father": "4.5.x",
