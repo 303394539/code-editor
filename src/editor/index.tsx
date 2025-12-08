@@ -1,4 +1,4 @@
-import { isEqual, isFunction, isString, uniqWith } from 'lodash';
+import { isEqual, isFunction, isString, uniqWith } from 'lodash-es';
 import raf from 'raf';
 
 import type { ReactElement, Ref } from 'react';
@@ -21,10 +21,11 @@ import ReactMonacoEditor, {
 import type { ChangeHandler } from 'react-monaco-editor/lib/types';
 
 import type { IDisposable } from 'monaco-editor';
-import MonacoEditor from 'monaco-editor';
 import type { EditorLanguage } from 'monaco-editor/esm/metadata';
 import type { editor } from 'monaco-editor/esm/vs/editor/editor.api';
-import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
+import monacoEditor, {
+  languages,
+} from 'monaco-editor/esm/vs/editor/editor.api';
 
 import { context } from '../provider';
 
@@ -73,7 +74,7 @@ export type ModeMap = {
 
 export type Mode = keyof ModeMap;
 
-export type MonacoType = typeof MonacoEditor;
+export type MonacoType = typeof monacoEditor;
 
 export type EditorInstance<T extends Mode = 'normal'> = {
   getMonaco: () => MonacoType | void;
@@ -134,7 +135,7 @@ const createSuggestionItem = ({ label, content, kind }: HintDataItem) =>
     label: label || content,
     insertText: content,
     kind,
-  } as any);
+  }) as any;
 
 let disposableList: IDisposable[] = [];
 
@@ -510,7 +511,7 @@ function InternalComponent<T extends Mode = 'normal'>(
         setOriginal: setOriginalHandler,
         getOriginal: getOriginalHandler,
         layout: layoutHandler,
-      } as EditorInstance<T>),
+      }) as EditorInstance<T>,
     [
       formatHandler,
       getEditorHandler,

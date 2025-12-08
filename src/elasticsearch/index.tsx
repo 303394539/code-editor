@@ -1,4 +1,4 @@
-import { isString } from 'lodash';
+import { isString } from 'lodash-es';
 
 import type { ReactElement, Ref } from 'react';
 import { forwardRef, useCallback, useEffect, useRef } from 'react';

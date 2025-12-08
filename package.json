@@ -19,39 +19,44 @@
     "build": "father build",
     "lint": "eslint ./src --ext .ts,.tsx --fix",
     "prebundle": "father prebundle",
+    "prepare": "husky",
     "prettier": "prettier --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
     "pub": "npm run prettier && npm run lint && npm run test && npm run build && npm publish",
     "test": "vitest run",
-    "update": "git clean -xfd && rm -rf ./pnpm-lock.yaml && pnpm i",
-    "prepare": "husky"
+    "update": "git clean -xfd && rm -rf ./pnpm-lock.yaml && pnpm i"
+  },
+  "lint-staged": {
+    "*.{ts?(x),js?(x),cjs,mjs,cts,mts}": [
+      "eslint --fix"
+    ]
   },
   "dependencies": {
     "@babel/runtime": "7.x",
     "@nginx/reference-lib": "1.1.x",
-    "@types/lodash": "4.x",
+    "@types/lodash-es": "4.x",
     "@types/raf": "3.x",
     "dt-sql-parser": "4.0.x",
     "json5": "2.2.x",
-    "lodash": "4.x",
-    "monaco-editor": "0.52.x",
+    "lodash-es": "4.x",
+    "monaco-editor": "0.54.x",
     "monaco-editor-nginx": "2.0.x",
     "monaco-editor-webpack-plugin": "7.1.x",
     "raf": "3.x",
-    "react-monaco-editor": "0.58.x",
+    "react-monaco-editor": "0.59.x",
     "sql-formatter": "15.6.x"
   },
   "devDependencies": {
-    "@baic/eslint-config-yolk": "~2.1.0-alpha.248",
-    "@baic/father-plugin-yolk": "~2.1.0-alpha.248",
-    "@baic/prettier-config-yolk": "~2.1.0-alpha.248",
-    "@types/prettier": "2.x",
+    "@baic/eslint-config-yolk": "~2.1.0-alpha.276",
+    "@baic/father-plugin-yolk": "~2.1.0-alpha.276",
+    "@baic/prettier-config-yolk": "~2.1.0-alpha.276",
+    "@types/prettier": "3.x",
     "@types/react": "19.x",
-    "father": "4.5.x",
+    "father": "4.6.x",
     "husky": "9.1.x",
-    "lint-staged": "15.5.x",
-    "prettier": "2.x",
+    "lint-staged": "16.2.x",
+    "prettier": "3.x",
     "react": "19.x",
-    "vitest": "3.1.x"
+    "vitest": "3.2.x"
   },
   "peerDependencies": {
     "@types/react": "17.x || 18.x || 19.x",
@@ -61,10 +66,5 @@
   "engines": {
     "node": ">=16",
     "pnpm": ">=8"
-  },
-  "lint-staged": {
-    "*.{ts?(x),js?(x),cjs,mjs,cts,mts}": [
-      "eslint --fix"
-    ]
   }
 }

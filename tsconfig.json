@@ -10,7 +10,7 @@
     // "importsNotUsedAsValues": "error",
     "jsx": "react-jsx",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noImplicitReturns": true,
     "resolveJsonModule": true,
     "rootDir": "./",

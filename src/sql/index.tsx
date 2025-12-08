@@ -1,4 +1,4 @@
-import { isEqual, isString, uniqBy, uniqWith } from 'lodash';
+import { isEqual, isString, uniqBy, uniqWith } from 'lodash-es';
 
 import type { ReactElement, Ref } from 'react';
 import { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
@@ -127,7 +127,7 @@ const createSuggestionItem = ({ label, content, kind }: HintDataItem) =>
     label: label || content,
     insertText: content,
     kind,
-  } as any);
+  }) as any;
 
 let disposableList: IDisposable[] = [];
 

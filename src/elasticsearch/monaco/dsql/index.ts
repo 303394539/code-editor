@@ -1,4 +1,4 @@
-import { get } from 'lodash';
+import { get } from 'lodash-es';
 
 import type { DsqlTreeItem } from '../type';
 import { compoundQueries } from './compoundQueries';
