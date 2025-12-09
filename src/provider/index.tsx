@@ -33,7 +33,7 @@ const { Provider } = context;
 /**
  * @description 加载字体
  */
-export const loadFonts = async (fonts?: FontOptions[]) => {
+export const preloadFonts = async (fonts?: FontOptions[]) => {
   const loadedFontFamilySet: Set<string> = new Set<string>();
   const refreshLoadedFamilySet = () => {
     if (!!document.fonts && !!document.fonts.size) {
@@ -75,7 +75,7 @@ const Component = ({
   children,
   fontFaces,
   fonts,
-  preloadFonts = true,
+  preloadFonts: $preloadFonts = true,
   ...moreProps
 }: ProviderProps) => {
   const fontsMemo = useMemo(() => fonts || fontFaces, [fonts, fontFaces]);
@@ -87,10 +87,10 @@ const Component = ({
     [moreProps, fontsMemo],
   );
   useEffect(() => {
-    if (preloadFonts && fontsMemo?.length) {
-      loadFonts(fontsMemo);
+    if ($preloadFonts && fontsMemo?.length) {
+      preloadFonts(fontsMemo);
     }
-  }, [preloadFonts, fontsMemo]);
+  }, [$preloadFonts, fontsMemo]);
   return <Provider value={valueMemo}>{children}</Provider>;
 };
 

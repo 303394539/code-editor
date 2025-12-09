@@ -28,7 +28,7 @@ import monacoEditor, {
 } from 'monaco-editor/esm/vs/editor/editor.api';
 
 import type { FontOptions } from '../provider';
-import { context, loadFonts } from '../provider';
+import { context, preloadFonts } from '../provider';
 
 export type ModeMap = {
   normal: {
@@ -343,14 +343,14 @@ function InternalComponent<T extends Mode = 'normal'>(
       return;
     }
     try {
-      const loadedFontFamilySet = await loadFonts(fonts);
+      const loadedFontFamilySet = await preloadFonts(fonts);
       monacoEditor.remeasureFonts();
       if (
         optionsMemo.fontFamily &&
         !loadedFontFamilySet.has(optionsMemo.fontFamily)
       ) {
         setTimeout(async () => {
-          const loadedFontFamilySet = await loadFonts(fonts);
+          const loadedFontFamilySet = await preloadFonts(fonts);
           monacoEditor.remeasureFonts();
           if (
             optionsMemo.fontFamily &&

@@ -127,3 +127,14 @@ export default () => (
   </div>
 );
 ```
+
+### 提前加载字体
+
+```tsx
+/**
+ * 预加载字体
+ */
+import { preloadFonts } from '@baic/code-editor/es/provider';
+
+preloadFonts();
+```
