@@ -15,5 +15,6 @@ module.exports = {
     '@typescript-eslint/no-unused-expressions': 0,
     '@typescript-eslint/no-use-before-define': 0,
     '@typescript-eslint/no-non-null-assertion': 0,
+    'jest/require-hook': 0,
   },
 };
