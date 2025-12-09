@@ -17,7 +17,7 @@ export type ProviderValue = Pick<
 >;
 
 export type ProviderProps = PropsWithChildren<ProviderValue> & {
-  preloadFonts?: boolean;
+  autoPreloadFonts?: boolean;
 };
 
 export type FontOptions = {
@@ -75,7 +75,7 @@ const Component = ({
   children,
   fontFaces,
   fonts,
-  preloadFonts: $preloadFonts = true,
+  autoPreloadFonts = true,
   ...moreProps
 }: ProviderProps) => {
   const fontsMemo = useMemo(() => fonts || fontFaces, [fonts, fontFaces]);
@@ -87,10 +87,10 @@ const Component = ({
     [moreProps, fontsMemo],
   );
   useEffect(() => {
-    if ($preloadFonts && fontsMemo?.length) {
+    if (autoPreloadFonts && fontsMemo?.length) {
       preloadFonts(fontsMemo);
     }
-  }, [$preloadFonts, fontsMemo]);
+  }, [autoPreloadFonts, fontsMemo]);
   return <Provider value={valueMemo}>{children}</Provider>;
 };
 

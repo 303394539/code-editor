@@ -131,10 +131,22 @@ export default () => (
 ### 提前加载字体
 
 ```tsx
-/**
- * 预加载字体
- */
-import { preloadFonts } from '@baic/code-editor/es/provider';
+/ 以 umi 为例
+import type { ReactNode } from 'react';
 
-preloadFonts();
+// import { preloadFonts } from '@baic/code-editor/es/provider';
+// preloadFonts(); 主动预加载字体
+
+/**
+ * 因为编辑器比较重，上下文的引用最好直接引用原地址，index的export引用会造成内存过大
+ */
+import Provider as CodeEditorProvider, { preloadFonts } from '@baic/code-editor/es/provider';
+
+export const rootContainer = (container: ReactNode) => {
+  return <CodeEditorProvider
+    autoPreloadFonts // 自动预加载字体
+  >
+    {container}
+  <CodeEditorProvider>
+}
 ```
