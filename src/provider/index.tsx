@@ -35,16 +35,16 @@ const { Provider } = context;
  */
 export const preloadFonts = async (fonts?: FontOptions[]) => {
   const loadedFontFamilySet: Set<string> = new Set<string>();
-  const refreshLoadedFamilySet = () => {
-    if (!!document.fonts && !!document.fonts.size) {
-      document.fonts.forEach((font) => {
+  const refreshLoadedFamilySet = async () => {
+    const fontFaceSet = await document.fonts.ready;
+    if (!!fontFaceSet && !!fontFaceSet.size) {
+      fontFaceSet.forEach((font) => {
         if (!!font.family && !loadedFontFamilySet.has(font.family)) {
           loadedFontFamilySet.add(font.family);
         }
       });
     }
   };
-  refreshLoadedFamilySet();
   await Promise.all(
     fonts
       ?.filter((font) => !loadedFontFamilySet.has(font.family))
@@ -68,6 +68,7 @@ export const preloadFonts = async (fonts?: FontOptions[]) => {
           }),
       ) || [],
   );
+  await refreshLoadedFamilySet();
   return loadedFontFamilySet;
 };
 

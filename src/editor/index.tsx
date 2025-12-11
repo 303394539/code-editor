@@ -351,7 +351,6 @@ function InternalComponent<T extends Mode = 'normal'>(
       ) {
         setTimeout(async () => {
           const loadedFontFamilySet = await preloadFonts(fonts);
-          monacoEditor.remeasureFonts();
           if (
             optionsMemo.fontFamily &&
             !loadedFontFamilySet.has(optionsMemo.fontFamily)
@@ -360,6 +359,7 @@ function InternalComponent<T extends Mode = 'normal'>(
               `@baic/code-editor 提示 fontFamily：${optionsMemo.fontFamily} 加载异常`,
             );
           }
+          monacoEditor.remeasureFonts();
         }, 200);
       }
     } catch (error) {

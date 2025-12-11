@@ -26,7 +26,8 @@
     "update": "git clean -xfd && rm -rf ./pnpm-lock.yaml && pnpm i"
   },
   "lint-staged": {
-    "*.{ts?(x),js?(x),cjs,mjs,cts,mts}": [
+    "*.?(c|m)(j|t)s?(x)": [
+      "prettier --write",
       "eslint --fix"
     ]
   },
@@ -49,7 +50,6 @@
     "@baic/eslint-config-yolk": "~2.1.0-alpha.276",
     "@baic/father-plugin-yolk": "~2.1.0-alpha.276",
     "@baic/prettier-config-yolk": "~2.1.0-alpha.276",
-    "@types/prettier": "3.x",
     "@types/react": "19.x",
     "father": "4.6.x",
     "husky": "9.1.x",
