@@ -44,12 +44,12 @@
     "monaco-editor-webpack-plugin": "7.1.x",
     "raf": "3.x",
     "react-monaco-editor": "0.59.x",
-    "sql-formatter": "15.6.x"
+    "sql-formatter": "15.7.x"
   },
   "devDependencies": {
-    "@baic/eslint-config-yolk": "~2.1.0-alpha.276",
-    "@baic/father-plugin-yolk": "~2.1.0-alpha.276",
-    "@baic/prettier-config-yolk": "~2.1.0-alpha.276",
+    "@baic/eslint-config-yolk": "~2.1.0-alpha.281",
+    "@baic/father-plugin-yolk": "~2.1.0-alpha.281",
+    "@baic/prettier-config-yolk": "~2.1.0-alpha.281",
     "@types/react": "19.x",
     "father": "4.6.x",
     "husky": "9.1.x",
@@ -66,5 +66,12 @@
   "engines": {
     "node": ">=16",
     "pnpm": ">=8"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "*"
+      ]
+    }
   }
 }

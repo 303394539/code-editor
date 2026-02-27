@@ -52,14 +52,7 @@ export type SQLEditorProps<T extends Mode = any> = Omit<
    * @description sql类型
    * @default MySQL
    */
-  type?:
-    | 'FlinkSQL'
-    | 'HiveSQL'
-    | 'ImpalaSQL'
-    | 'MySQL'
-    | 'PostgreSQL'
-    | 'SparkSQL'
-    | 'TrinoSQL';
+  type?: Type;
   formatOptions?: FormatOptionsWithLanguage;
 };
 
@@ -81,7 +74,9 @@ const typeMap = {
   TrinoSQL,
 };
 
-// const formatLanguageMap: Record<keyof typeof typeMap, SqlLanguage> = {
+type Type = keyof typeof typeMap;
+
+// const formatLanguageMap: Record<Type, SqlLanguage> = {
 //   FlinkSQL: 'sql',
 //   HiveSQL: 'hive',
 //   ImpalaSQL: 'sql',
@@ -91,7 +86,7 @@ const typeMap = {
 //   TrinoSQL: 'trino',
 // };
 
-const languageMap: Record<keyof typeof typeMap, 'sql' | 'mysql' | 'pgsql'> = {
+const languageMap: Record<Type, 'sql' | 'mysql' | 'pgsql'> = {
   FlinkSQL: 'sql',
   HiveSQL: 'sql',
   ImpalaSQL: 'sql',
@@ -100,7 +95,7 @@ const languageMap: Record<keyof typeof typeMap, 'sql' | 'mysql' | 'pgsql'> = {
   SparkSQL: 'sql',
   TrinoSQL: 'sql',
 };
-const defaultHintDataMap: Record<keyof typeof typeMap, HintData> = {
+const defaultHintDataMap: Record<Type, HintData> = {
   FlinkSQL: {
     databases: [],
     keywords: FlinkSQLKeywords.map((content) => ({
